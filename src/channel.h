@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -105,21 +105,17 @@ public:
         { Protocol.CreateChanInfoMes ( ChInfo ); }
 
     void CreateReqChanInfoMes() { Protocol.CreateReqChanInfoMes(); }
-    void CreateVersionAndOSMes() { Protocol.CreateVersionAndOSMes(); }
-    void CreateMuteStateHasChangedMes ( const int iChanID, const bool bIsMuted ) { Protocol.CreateMuteStateHasChangedMes ( iChanID, bIsMuted ); }
+
+    void SetGotPassword (bool set);
+    bool GetGotPassword () { return bGotPassword; }
+    bool PasswordTimedOut ();
 
     void SetGain ( const int iChanID, const double dNewGain );
     double GetGain ( const int iChanID );
     double GetFadeInGain() { return static_cast<double> ( iFadeInCnt ) / iFadeInCntMax; }
 
-    void SetPan ( const int iChanID, const double dNewPan );
-    double GetPan ( const int iChanID );
-
     void SetRemoteChanGain ( const int iId, const double dGain )
         { Protocol.CreateChanGainMes ( iId, dGain ); }
-
-    void SetRemoteChanPan ( const int iId, const double dPan )
-        { Protocol.CreateChanPanMes ( iId, dPan ); }
 
     bool SetSockBufNumFrames ( const int  iNewNumFrames,
                                const bool bPreserve = false );
@@ -157,19 +153,16 @@ public:
             Protocol.CreateJitBufMes ( iJitBufSize );
         }
     }
-    void CreateClientIDMes ( const int iChanID )             { Protocol.CreateClientIDMes ( iChanID ); }
     void CreateReqNetwTranspPropsMes()                       { Protocol.CreateReqNetwTranspPropsMes(); }
     void CreateReqJitBufMes()                                { Protocol.CreateReqJitBufMes(); }
     void CreateReqConnClientsList()                          { Protocol.CreateReqConnClientsList(); }
     void CreateChatTextMes ( const QString& strChatText )    { Protocol.CreateChatTextMes ( strChatText ); }
     void CreateLicReqMes ( const ELicenceType eLicenceType ) { Protocol.CreateLicenceRequiredMes ( eLicenceType ); }
     void CreateReqChannelLevelListMes ( bool bOptIn )        { Protocol.CreateReqChannelLevelListMes ( bOptIn ); }
+    void CreateIncorrectPasswordMes() { Protocol.CreateIncorrectPasswordMes (); }
 
     void CreateConClientListMes ( const CVector<CChannelInfo>& vecChanInfo )
         { Protocol.CreateConClientListMes ( vecChanInfo ); }
-
-    void CreateRecorderStateMes ( const ERecorderState eRecorderState )
-        { Protocol.CreateRecorderStateMes ( eRecorderState ); }
 
     CNetworkTransportProps GetNetworkTransportPropsFromCurrentSettings();
 
@@ -202,7 +195,6 @@ protected:
 
     // mixer and effect settings
     CVector<double>   vecdGains;
-    CVector<double>   vecdPannings;
 
     // network jitter-buffer
     CNetBufWithStats  SockBuf;
@@ -237,11 +229,13 @@ protected:
     bool              bChannelLevelsRequired;
     double            dPrevLevel;
 
+    bool              bGotPassword;
+    time_t            timeConnected;
+
 public slots:
     void OnSendProtMessage ( CVector<uint8_t> vecMessage );
     void OnJittBufSizeChange ( int iNewJitBufSize );
     void OnChangeChanGain ( int iChanID, double dNewGain );
-    void OnChangeChanPan ( int iChanID, double dNewPan );
     void OnChangeChanInfo ( CChannelCoreInfo ChanInfo );
     void OnNetTranspPropsReceived ( CNetworkTransportProps NetworkTransportProps );
     void OnReqNetTranspProps();
@@ -282,15 +276,11 @@ signals:
     void ReqConnClientsList();
     void ConClientListMesReceived ( CVector<CChannelInfo> vecChanInfo );
     void ChanInfoHasChanged();
-    void ClientIDReceived ( int iChanID );
-    void MuteStateHasChanged ( int iChanID, bool bIsMuted );
-    void MuteStateHasChangedReceived ( int iChanID, bool bIsMuted );
     void ReqChanInfo();
     void ChatTextReceived ( QString strChatText );
     void ReqNetTranspProps();
     void LicenceRequired ( ELicenceType eLicenceType );
-    void VersionAndOSReceived ( COSUtil::EOpSystemType eOSType, QString strVersion );
-    void RecorderStateReceived ( ERecorderState eRecorderState );
+    void IncorrectPassword ();
     void Disconnected();
 
     void DetectedCLMessage ( CVector<uint8_t> vecbyMesBodyData,

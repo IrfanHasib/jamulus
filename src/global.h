@@ -43,7 +43,7 @@ LED bar:      lbr
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -80,17 +80,17 @@ LED bar:      lbr
 // version and application name (use version from qt prject file)
 #undef VERSION
 #define VERSION                          APP_VERSION
-#define APP_NAME                         "Jamulus"
+#define APP_NAME                         "Répét’Box"
 
 // Windows registry key name of auto run entry for the server
-#define AUTORUN_SERVER_REG_NAME          "Jamulus server"
+#define AUTORUN_SERVER_REG_NAME          "Répét’Box server"
 
 // default names of the ini-file for client and server
-#define DEFAULT_INI_FILE_NAME            "Jamulus.ini"
-#define DEFAULT_INI_FILE_NAME_SERVER     "Jamulusserver.ini"
+#define DEFAULT_INI_FILE_NAME            "repetbox.ini"
+#define DEFAULT_INI_FILE_NAME_SERVER     "repetboxserver.ini"
 
 // file name for logging file
-#define DEFAULT_LOG_FILE_NAME            "Jamulussrvlog.txt"
+#define DEFAULT_LOG_FILE_NAME            "repetboxsrvlog.txt"
 
 // default oldest item to draw in history graph (days ago)
 #define DEFAULT_DAYS_HISTORY             60
@@ -101,24 +101,22 @@ LED bar:      lbr
 #define SYSTEM_FRAME_SIZE_SAMPLES        64
 #define DOUBLE_SYSTEM_FRAME_SIZE_SAMPLES ( 2 * SYSTEM_FRAME_SIZE_SAMPLES )
 
-// default server address and port numbers
-#define DEFAULT_SERVER_ADDRESS           "jamulus.fischvolk.de"
-#define DEFAULT_PORT_NUMBER              22124
-#define CENTSERV_ALL_GENRES              "jamulusallgenres.fischvolk.de:22224"
-#define CENTSERV_GENRE_ROCK              "jamulusrock.fischvolk.de:22424"
-#define CENTSERV_GENRE_JAZZ              "jamulusjazz.fischvolk.de:22324"
-#define CENTSERV_GENRE_CLASSICAL_FOLK    "jamulusclassical.fischvolk.de:22524"
+// default server address
+#define DEFAULT_SERVER_ADDRESS           "repetbox.ddns.net"
+#define DEFAULT_SERVER_NAME              "Serveur Central"
 
-// getting started and software manual URL
-#define CLIENT_GETTING_STARTED_URL       "https://github.com/corrados/jamulus/wiki/Getting-Started"
-#define SERVER_GETTING_STARTED_URL       "https://github.com/corrados/jamulus/wiki/Running-a-Server"
-#define SOFTWARE_MANUAL_URL              "https://github.com/corrados/jamulus/blob/master/src/res/homepage/manual.md"
+// download URL
+#define SOFTWARE_DOWNLOAD_URL            "https://www.repetbox.com/"
 
 // determining server internal address uses well-known host and port
 // (Google DNS, or something else reliable)
 #define WELL_KNOWN_HOST                  "8.8.8.8" // Google
 #define WELL_KNOWN_PORT                  53        // DNS
 #define IP_LOOKUP_TIMEOUT                500       // ms
+
+// defined port numbers for client and server
+#define LLCON_DEFAULT_PORT_NUMBER        22124
+#define LLCON_PORT_NUMBER_NORTHAMERICA   22224
 
 // system sample rate (the sound card and audio coder works on this sample rate)
 #define SYSTEM_SAMPLE_RATE_HZ            48000 // Hz
@@ -148,12 +146,13 @@ LED bar:      lbr
 // default network buffer size
 #define DEF_NET_BUF_SIZE_NUM_BL          10 // number of blocks
 
-// audio mixer fader and panning maximum value
+// audio mixer fader maximum value
 #define AUD_MIX_FADER_MAX                100
-#define AUD_MIX_PAN_MAX                  100
 
-// maximum number of recognized sound cards installed in the system
+// maximum number of recognized sound cards installed in the system,
+// definition for "no device"
 #define MAX_NUMBER_SOUND_CARDS           129 // e.g. 16 inputs, 8 outputs + default entry (MacOS)
+#define INVALID_SNC_CARD_DEVICE          -1
 
 // define the maximum number of audio channel for input/output we can store
 // channel infos for (and therefore this is the maximum number of entries in
@@ -162,21 +161,20 @@ LED bar:      lbr
 #define MAX_NUM_IN_OUT_CHANNELS          64
 
 // maximum number of elemts in the server address combo box
-#define MAX_NUM_SERVER_ADDR_ITEMS        12
+#define MAX_NUM_SERVER_ADDR_ITEMS        6
 
 // maximum number of fader settings to be stored (together with the fader tags)
-#define MAX_NUM_STORED_FADER_SETTINGS    250
+#define MAX_NUM_STORED_FADER_SETTINGS    200
 
 // range for signal level meter
 #define LOW_BOUND_SIG_METER              ( -50.0 ) // dB
 #define UPPER_BOUND_SIG_METER            ( 0.0 )   // dB
 
-// defines for LED level meter CMultiColorLEDBar
-#define NUM_STEPS_LED_BAR                8
-#define RED_BOUND_LED_BAR                7
-#define YELLOW_BOUND_LED_BAR             5
-
-// maximum number of connected clients at the server (must not be larger than 256)
+// Maximum number of connected clients at the server.
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+// If you want to change this paramter you have to modify the code on some places, too! The code tag
+// "MAX_NUM_CHANNELS_TAG" shows these places (just search for the tag in the entire code)
+#endif
 #define MAX_NUM_CHANNELS                 50 // max number channels for server
 
 // actual number of used channels in the server
@@ -186,20 +184,21 @@ LED bar:      lbr
 
 // Maximum number of servers registered in the server list. If you want to
 // change this parameter, you most probably have to adjust MAX_SIZE_BYTES_NETW_BUF.
-#define MAX_NUM_SERVERS_IN_SERVER_LIST   150 // reduced to 150 because we now have genre-based server lists
+#define MAX_NUM_SERVERS_IN_SERVER_LIST   200
 
 // defines the time interval at which the ping time is updated in the GUI
 #define PING_UPDATE_TIME_MS              500 // ms
 
-// defines the time interval at which the ping time is updated for the server list
-#define PING_UPDATE_TIME_SERVER_LIST_MS  2500 // ms
+// defines the time interval at which the ping time is updated for the server
+// list
+#define PING_UPDATE_TIME_SERVER_LIST_MS  2000 // ms
 
 // defines the interval between Channel Level updates from the server
 #define CHANNEL_LEVEL_UPDATE_INTERVAL    200  // number of frames at 64 samples frame size
 
 // time-out until a registered server is deleted from the server list if no
 // new registering was made in minutes
-#define SERVLIST_TIME_OUT_MINUTES        33 // minutes (should include 3 UDP registration messages)
+#define SERVLIST_TIME_OUT_MINUTES        60 // minutes
 
 // poll time for server list (to check if entries are time-out)
 #define SERVLIST_POLL_TIME_MINUTES       1 // minute
@@ -211,15 +210,18 @@ LED bar:      lbr
 #define SERVLIST_REGIST_INTERV_MINUTES   15 // minutes
 
 // defines the minimum time a server must run to be a permanent server
-#define SERVLIST_TIME_PERMSERV_MINUTES   2880 // minutes, 2880 = 60 min * 24 h * 2 d
+#define SERVLIST_TIME_PERMSERV_MINUTES   1440 // minutes, 1440 = 60 min * 24 h
 
 // registration response timeout
-#define REGISTER_SERVER_TIME_OUT_MS      500 // ms
+#define REGISTER_SERVER_TIME_OUT_MS     500 // ms
 
 // defines the maximum number of times to retry server registration
 // when no response is received within the timeout (before reverting
 // to SERVLIST_REGIST_INTERV_MINUTES)
-#define REGISTER_SERVER_RETRY_LIMIT      5 // count
+#define REGISTER_SERVER_RETRY_LIMIT     5 // count
+
+// length of the moving average buffer for response time measurement
+#define TIME_MOV_AV_RESPONSE_SECONDS     30 // seconds
 
 
 // Maximum length of fader tag and text message strings (Since for chat messages
@@ -235,13 +237,14 @@ LED bar:      lbr
 #define MAX_LEN_VERSION_TEXT             20
 
 // common tool tip bottom line text
-#define TOOLTIP_COM_END_TEXT             \
-    "<br><div align=right><font size=-1><i>" + \
-    QCoreApplication::translate ( "global","For more information use the ""What's " \
-    "This"" help (help menu, right mouse button or Shift+F1)" ) + \
-    "</i></font></div>"
+#define TOOLTIP_COM_END_TEXT             tr ( \
+    "<br><div align=right><font size=-1><i>" \
+    "For more information use the ""What's " \
+    "This"" help (? menu, right mouse button or Shift+F1)" \
+    "</i></font></div>" )
 
 #define _MAXSHORT                        32767
+#define _MAXBYTE                         255 // binary: 11111111
 #define _MINSHORT                        ( -32768 )
 #define INVALID_INDEX                    -1 // define invalid index as a negative value (a valid index must always be >= 0)
 

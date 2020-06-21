@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -34,14 +34,14 @@ CChatDlg::CChatDlg ( QWidget* parent, Qt::WindowFlags f ) :
 
     // Add help text to controls -----------------------------------------------
     // chat window
-    txvChatWindow->setWhatsThis ( "<b>" + tr ( "Chat Window" ) + ":</b> " + tr (
-        "The chat window shows a history of all chat messages." ) );
+    txvChatWindow->setWhatsThis ( tr ( "<b>Chat Window:</b> The chat window "
+        "shows a history of all chat messages." ) );
 
     txvChatWindow->setAccessibleName ( tr ( "Chat history" ) );
 
     // input message text
-    edtLocalInputText->setWhatsThis ( "<b>" + tr ( "Input Message Text" ) + ":</b> " + tr (
-        "Enter the chat message text in the edit box and press enter to send the "
+    edtLocalInputText->setWhatsThis ( tr ( "<b>Input Message Text:</b> Enter "
+        "the chat message text in the edit box and press enter to send the "
         "message to the server which distributes the message to all connected "
         "clients. Your message will then show up in the chat window." ) );
 
@@ -52,19 +52,17 @@ CChatDlg::CChatDlg ( QWidget* parent, Qt::WindowFlags f ) :
     txvChatWindow->clear();
     edtLocalInputText->clear();
 
-    // set a placeholder text to make sure where to type the message in (#384)
-    edtLocalInputText->setPlaceholderText ( tr ( "Type a message here" ) );
-
 
     // Connections -------------------------------------------------------------
-    QObject::connect ( edtLocalInputText, &QLineEdit::textChanged,
-        this, &CChatDlg::OnLocalInputTextTextChanged );
+    QObject::connect ( edtLocalInputText,
+        SIGNAL ( textChanged ( const QString& ) ),
+        this, SLOT ( OnLocalInputTextTextChanged ( const QString& ) ) );
 
-    QObject::connect ( edtLocalInputText, &QLineEdit::returnPressed,
-        this, &CChatDlg::OnLocalInputTextReturnPressed );
+    QObject::connect ( edtLocalInputText, SIGNAL ( returnPressed() ),
+        this, SLOT ( OnLocalInputTextReturnPressed() ) );
 
-    QObject::connect ( butClear, &QPushButton::pressed,
-        this, &CChatDlg::OnClearPressed );
+    QObject::connect ( butClear, SIGNAL ( pressed() ),
+        this, SLOT ( OnClearPressed() ) );
 }
 
 void CChatDlg::OnLocalInputTextTextChanged ( const QString& strNewText )
@@ -96,5 +94,11 @@ void CChatDlg::AddChatText ( QString strChatText )
     txvChatWindow->append ( strChatText );
 
     // notify accessibility plugin that text has changed
-    QAccessible::updateAccessibility ( new QAccessibleValueChangeEvent ( txvChatWindow, strChatText ) );
+    QAccessible::updateAccessibility (
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        txvChatWindow, 0, QAccessible::ValueChanged
+#else
+        new QAccessibleValueChangeEvent ( txvChatWindow, strChatText )
+#endif
+        );
 }

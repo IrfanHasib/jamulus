@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -33,10 +33,6 @@
 #include <QRadioButton>
 #include <QMenuBar>
 #include <QLayout>
-#include <QMessageBox>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-# include <QVersionNumber>
-#endif
 #include "global.h"
 #include "client.h"
 #include "settings.h"
@@ -55,6 +51,10 @@
 
 
 /* Definitions ****************************************************************/
+// text strings for connection button for connect and disconnect
+#define CON_BUT_CONNECTTEXT         "C&onnect"
+#define CON_BUT_DISCONNECTTEXT      "D&isconnect"
+
 // update time for GUI controls
 #define LEVELMETER_UPDATE_TIME_MS   100   // ms
 #define BUFFER_LED_UPDATE_TIME_MS   300   // ms
@@ -73,7 +73,6 @@ public:
     CClientDlg ( CClient*        pNCliP,
                  CSettings*      pNSetP,
                  const QString&  strConnOnStartupAddress,
-                 const int       iCtrlMIDIChannel,
                  const bool      bNewShowComplRegConnList,
                  const bool      bShowAnalyzerConsole,
                  QWidget*        parent = nullptr,
@@ -98,17 +97,15 @@ protected:
 
     bool               bConnected;
     bool               bConnectDlgWasShown;
-    bool               bMIDICtrlUsed;
     QTimer             TimerSigMet;
     QTimer             TimerBuffersLED;
     QTimer             TimerStatus;
     QTimer             TimerPing;
 
-    virtual void       closeEvent ( QCloseEvent* Event );
+    virtual void       closeEvent  ( QCloseEvent* Event );
     void               UpdateDisplay();
 
     QMenu*             pViewMenu;
-    QMenu*             pEditMenu;
     QMenuBar*          pMenu;
     QMenu*             pInstrPictPopupMenu;
     QMenu*             pCountryFlagPopupMenu;
@@ -121,6 +118,8 @@ protected:
 
 public slots:
     void OnAboutToQuit() { pSettings->Save(); }
+
+    void OnIncorrectPassword();
 
     void OnConnectDisconBut();
     void OnTimerSigMet();
@@ -138,9 +137,6 @@ public slots:
                                     const int iValue ) { MainMixerBoard->SetFaderLevel ( iChannelIdx,
                                                                                          iValue ); }
 
-    void OnVersionAndOSReceived ( COSUtil::EOpSystemType ,
-                                  QString                strVersion );
-
 #ifdef ENABLE_CLIENT_VERSION_AND_OS_DEBUGGING
     void OnCLVersionAndOSReceived ( CHostAddress           InetAddr,
                                     COSUtil::EOpSystemType eOSType,
@@ -153,8 +149,6 @@ public slots:
     void OnOpenGeneralSettings() { ShowGeneralSettings(); }
     void OnOpenChatDialog() { ShowChatWindow(); }
     void OnOpenAnalyzerConsole() { ShowAnalyzerConsole(); }
-    void OnSortChannelsByName() { MainMixerBoard->ChangeFaderOrder ( true, ST_BY_NAME ); }
-    void OnSortChannelsByInstrument() { MainMixerBoard->ChangeFaderOrder ( true, ST_BY_INSTRUMENT ); }
 
     void OnSettingsStateChanged ( int value );
     void OnChatStateChanged ( int value );
@@ -175,11 +169,8 @@ public slots:
     void OnChatTextReceived ( QString strChatText );
     void OnLicenceRequired ( ELicenceType eLicenceType );
 
-    void OnChangeChanGain ( int iId, double dGain, bool bIsMyOwnFader )
-        { pClient->SetRemoteChanGain ( iId, dGain, bIsMyOwnFader ); }
-
-	void OnChangeChanPan ( int iId, double dPan )
-        { pClient->SetRemoteChanPan ( iId, dPan ); }
+    void OnChangeChanGain ( int iId, double dGain )
+        { pClient->SetRemoteChanGain ( iId, dGain ); }
 
     void OnNewLocalInputText ( QString strChatText )
         { pClient->CreateChatTextMes ( strChatText ); }
@@ -204,26 +195,19 @@ public slots:
                                           CVector<CChannelInfo> vecChanInfo )
         { ConnectDlg.SetConnClientsList ( InetAddr, vecChanInfo ); }
 
-    void OnClientIDReceived ( int iChanID )
-        { MainMixerBoard->SetMyChannelID ( iChanID ); }
-
-    void OnMuteStateHasChangedReceived ( int iChanID, bool bIsMuted )
-        { MainMixerBoard->SetRemoteFaderIsMute ( iChanID, bIsMuted ); }
-
     void OnCLChannelLevelListReceived ( CHostAddress       /* unused */,
                                         CVector<uint16_t> vecLevelList )
         { MainMixerBoard->SetChannelLevels ( vecLevelList ); }
 
     void OnConnectDlgAccepted();
-    void OnDisconnected() { Disconnect(); }
+    void OnDisconnected();
     void OnCentralServerAddressTypeChanged();
-    void OnGUIDesignChanged() { SetGUIDesign ( pClient->GetGUIDesign() ); }
+
+    void OnGUIDesignChanged()
+        { SetGUIDesign ( pClient->GetGUIDesign() ); }
 
     void OnDisplayChannelLevelsChanged()
         { MainMixerBoard->SetDisplayChannelLevels ( pClient->GetDisplayChannelLevels() ); }
-
-    void OnRecorderStateReceived ( ERecorderState eRecorderState )
-        { MainMixerBoard->SetRecorderState ( eRecorderState ); }
 
     void OnAudioChannelsChanged() { UpdateRevSelection(); }
     void OnNumClientsChanged ( int iNewNumClients );

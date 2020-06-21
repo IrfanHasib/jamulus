@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -48,7 +48,8 @@ CMultiColorLEDBar::CMultiColorLEDBar ( QWidget* parent, Qt::WindowFlags f ) :
         // create LED object
         vecpLEDs[iLEDIdx] = new cLED ( parent );
 
-        // add LED to layout with spacer (do not add spacer on the bottom of the first LED)
+        // add LED to layout with spacer (do not add spacer on the bottom of the
+        // first LED)
         if ( iLEDIdx < NUM_STEPS_LED_BAR - 1 )
         {
             pLEDLayout->addStretch();
@@ -62,6 +63,11 @@ CMultiColorLEDBar::CMultiColorLEDBar ( QWidget* parent, Qt::WindowFlags f ) :
     pProgressBar->setOrientation ( Qt::Vertical );
     pProgressBar->setRange ( 0, 100 * NUM_STEPS_LED_BAR );
     pProgressBar->setFormat ( "" ); // suppress percent numbers
+    pProgressBar->setStyleSheet (
+        "QProgressBar        { margin:     1px;"
+        "                      padding:    1px; "
+        "                      width:      15px; }"
+        "QProgressBar::chunk { background: green; }" );
 
     // setup stacked layout for meter type switching mechanism
     pStackedLayout = new QStackedLayout ( this );
@@ -105,7 +111,7 @@ void CMultiColorLEDBar::Reset ( const bool bEnabled )
         // different reset behavoiur for enabled and disabled control
         if ( bEnabled )
         {
-            vecpLEDs[iLEDIdx]->setColor ( cLED::RL_BLACK );
+            vecpLEDs[iLEDIdx]->setColor ( cLED::RL_GREY );
         }
         else
         {
@@ -126,27 +132,6 @@ void CMultiColorLEDBar::SetLevelMeterType ( const ELevelMeterType eNType )
 
     case MT_BAR:
         pStackedLayout->setCurrentIndex ( 1 );
-        pProgressBar->setStyleSheet (
-            "QProgressBar        { margin:     1px;"
-            "                      padding:    1px; "
-            "                      width:      15px; }"
-            "QProgressBar::chunk { background: green; }" );
-        break;
-
-    case MT_SLIM_BAR:
-        // set all LEDs to disabled, otherwise we would not get our desired small width
-        for ( int iLEDIdx = 0; iLEDIdx < NUM_STEPS_LED_BAR; iLEDIdx++ )
-        {
-            vecpLEDs[iLEDIdx]->setColor ( cLED::RL_DISABLED );
-        }
-
-        pStackedLayout->setCurrentIndex ( 1 );
-        pProgressBar->setStyleSheet (
-            "QProgressBar        { border:     0px;"
-            "                      margin:     0px;"
-            "                      padding:    0px; "
-            "                      width:      4px; }"
-            "QProgressBar::chunk { background: green; }" );
         break;
     }
 }
@@ -187,13 +172,12 @@ void CMultiColorLEDBar::setValue ( const double dValue )
                 else
                 {
                     // we use grey LED for inactive state
-                    vecpLEDs[iLEDIdx]->setColor ( cLED::RL_BLACK );
+                    vecpLEDs[iLEDIdx]->setColor ( cLED::RL_GREY );
                 }
             }
             break;
 
         case MT_BAR:
-        case MT_SLIM_BAR:
             pProgressBar->setValue ( 100 * dValue );
             break;
         }
@@ -201,17 +185,21 @@ void CMultiColorLEDBar::setValue ( const double dValue )
 }
 
 CMultiColorLEDBar::cLED::cLED ( QWidget* parent ) :
-    BitmCubeRoundBlack  ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDBlackSmall.png" ) ),
-    BitmCubeRoundGreen  ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDGreenSmall.png" ) ),
-    BitmCubeRoundYellow ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDYellowSmall.png" ) ),
-    BitmCubeRoundRed    ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDRedSmall.png" ) )
+    BitmCubeRoundDisabled ( QString::fromUtf8 ( ":/png/LEDs/res/CLEDDisabledSmall.png" ) ),
+    BitmCubeRoundGrey     ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDGreySmall.png" ) ),
+    BitmCubeRoundGreen    ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDGreenSmall.png" ) ),
+    BitmCubeRoundYellow   ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDYellowSmall.png" ) ),
+    BitmCubeRoundRed      ( QString::fromUtf8 ( ":/png/LEDs/res/HLEDRedSmall.png" ) )
 {
     // create LED label
     pLEDLabel = new QLabel ( "", parent );
 
+    // bitmap defines minimum size of the label
+    pLEDLabel->setMinimumSize ( BitmCubeRoundGrey.width(), BitmCubeRoundGrey.height() );
+
     // set initial bitmap
-    pLEDLabel->setPixmap ( BitmCubeRoundBlack );
-    eCurLightColor = RL_BLACK;
+    pLEDLabel->setPixmap ( BitmCubeRoundGrey );
+    eCurLightColor = RL_GREY;
 }
 
 void CMultiColorLEDBar::cLED::setColor ( const ELightColor eNewColor )
@@ -222,11 +210,11 @@ void CMultiColorLEDBar::cLED::setColor ( const ELightColor eNewColor )
         switch ( eNewColor )
         {
         case RL_DISABLED:
-            pLEDLabel->setPixmap ( QPixmap() );
+            pLEDLabel->setPixmap ( BitmCubeRoundDisabled );
             break;
 
-        case RL_BLACK:
-            pLEDLabel->setPixmap ( BitmCubeRoundBlack );
+        case RL_GREY:
+            pLEDLabel->setPixmap ( BitmCubeRoundGrey );
             break;
 
         case RL_GREEN:

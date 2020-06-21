@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -77,17 +77,6 @@ void CSettings::Load()
             }
         }
 
-        // stored pan values
-        for ( iIdx = 0; iIdx < MAX_NUM_STORED_FADER_SETTINGS; iIdx++ )
-        {
-            if ( GetNumericIniSet ( IniXMLDocument, "client",
-                                    QString ( "storedpanvalue%1" ).arg ( iIdx ),
-                                    0, AUD_MIX_PAN_MAX, iValue ) )
-            {
-                pClient->vecStoredPanValues[iIdx] = iValue;
-            }
-        }
-
         // stored fader solo state
         for ( iIdx = 0; iIdx < MAX_NUM_STORED_FADER_SETTINGS; iIdx++ )
         {
@@ -125,8 +114,7 @@ void CSettings::Load()
 
         // name
         pClient->ChannelInfo.strName = FromBase64ToString (
-            GetIniSetting ( IniXMLDocument, "client", "name_base64",
-                            ToBase64 ( QCoreApplication::translate ( "CMusProfDlg", "No Name" ) ) ) );
+            GetIniSetting ( IniXMLDocument, "client", "name_base64" ) );
 
         // instrument
         if ( GetNumericIniSet ( IniXMLDocument, "client", "instrument",
@@ -190,9 +178,9 @@ void CSettings::Load()
         }
         else
         {
-            // use "INVALID_INDEX" to tell the sound card driver that
+            // use "INVALID_SNC_CARD_DEVICE" to tell the sound card driver that
             // no device selection was done previously
-            pClient->SetSndCrdDev ( INVALID_INDEX );
+            pClient->SetSndCrdDev ( INVALID_SNC_CARD_DEVICE );
         }
 
         // sound card channel mapping settings: make sure these settings are
@@ -269,7 +257,7 @@ void CSettings::Load()
 
         // GUI design
         if ( GetNumericIniSet ( IniXMLDocument, "client", "guidesign",
-             0, 2 /* GD_SLIMFADER */, iValue ) )
+             0, 1 /* GD_ORIGINAL */, iValue ) )
         {
             pClient->SetGUIDesign ( static_cast<EGUIDesign> ( iValue ) );
         }
@@ -300,7 +288,7 @@ void CSettings::Load()
 
         // central server address type
         if ( GetNumericIniSet ( IniXMLDocument, "client", "centservaddrtype",
-             0, static_cast<int> ( AT_CUSTOM ), iValue ) )
+             0, 2 /* AT_NORTH_AMERICA */, iValue ) )
         {
             pClient->SetCentralServerAddressType ( static_cast<ECSAddType> ( iValue ) );
         }
@@ -316,7 +304,7 @@ if ( GetFlagIniSet ( IniXMLDocument, "client", "defcentservaddr", bValue ) )
     // only the case that manual was set in old ini must be considered
     if ( !bValue )
     {
-        pClient->SetCentralServerAddressType ( AT_CUSTOM );
+        pClient->SetCentralServerAddressType ( AT_MANUAL );
     }
 }
 
@@ -371,7 +359,7 @@ if ( GetFlagIniSet ( IniXMLDocument, "client", "defcentservaddr", bValue ) )
         // central server address type (note that it is important
         // to set this setting prior to the "central server address")
         if ( GetNumericIniSet ( IniXMLDocument, "server", "centservaddrtype",
-             0, static_cast<int> ( AT_CUSTOM ), iValue ) )
+             0, 2 /* AT_NORTH_AMERICA */, iValue ) )
         {
             pServer->SetCentralServerAddressType ( static_cast<ECSAddType> ( iValue ) );
         }
@@ -387,7 +375,7 @@ if ( GetFlagIniSet ( IniXMLDocument, "server", "defcentservaddr", bValue ) )
     // only the case that manual was set in old ini must be considered
     if ( !bValue )
     {
-        pServer->SetCentralServerAddressType ( AT_CUSTOM );
+        pServer->SetCentralServerAddressType ( AT_MANUAL );
     }
 }
 
@@ -427,10 +415,6 @@ if ( GetFlagIniSet ( IniXMLDocument, "server", "defcentservaddr", bValue ) )
         {
             pServer->SetLicenceType ( static_cast<ELicenceType> ( iValue ) );
         }
-
-        // window position of the main window
-        pServer->vecWindowPosMain = FromBase64ToByteArray (
-            GetIniSetting ( IniXMLDocument, "server", "winposmain_base64" ) );
     }
 }
 
@@ -469,14 +453,6 @@ void CSettings::Save()
             SetNumericIniSet ( IniXMLDocument, "client",
                                QString ( "storedfaderlevel%1" ).arg ( iIdx ),
                                pClient->vecStoredFaderLevels[iIdx] );
-        }
-
-        // stored pan values
-        for ( iIdx = 0; iIdx < MAX_NUM_STORED_FADER_SETTINGS; iIdx++ )
-        {
-            SetNumericIniSet ( IniXMLDocument, "client",
-                               QString ( "storedpanvalue%1" ).arg ( iIdx ),
-                               pClient->vecStoredPanValues[iIdx] );
         }
 
         // stored fader solo states
@@ -670,10 +646,6 @@ void CSettings::Save()
         // licence type
         SetNumericIniSet ( IniXMLDocument, "server", "licencetype",
             static_cast<int> ( pServer->GetLicenceType() ) );
-
-        // window position of the main window
-        PutIniSetting ( IniXMLDocument, "server", "winposmain_base64",
-            ToBase64 ( pServer->vecWindowPosMain ) );
     }
 
     // prepare file name for storing initialization data in XML file and store

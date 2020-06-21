@@ -7,15 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>345</width>
-    <height>490</height>
+    <height>363</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string/>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/png/main/res/fronticon.png</normaloff>:/png/main/res/fronticon.png</iconset>
   </property>
   <property name="styleSheet">
    <string/>
@@ -62,25 +58,6 @@
             </property>
             <item>
              <layout class="QHBoxLayout">
-              <item>
-               <widget class="QLabel" name="pxlLogo">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="pixmap">
-                 <pixmap resource="resources.qrc">:/png/main/res/fronticon.png</pixmap>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
               <item>
                <spacer>
                 <property name="orientation">
@@ -249,7 +226,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>19</width>
+                  <width>16</width>
                   <height>88</height>
                  </size>
                 </property>
@@ -265,7 +242,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>19</width>
+                  <width>16</width>
                   <height>88</height>
                  </size>
                 </property>
@@ -590,8 +567,6 @@
   <tabstop>rbtReverbSelL</tabstop>
   <tabstop>rbtReverbSelR</tabstop>
  </tabstops>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

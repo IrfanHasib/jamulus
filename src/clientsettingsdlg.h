@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -34,7 +34,6 @@
 #include <QMenuBar>
 #include <QLayout>
 #include <QButtonGroup>
-#include <QMessageBox>
 #include "global.h"
 #include "client.h"
 #include "multicolorled.h"
@@ -74,6 +73,7 @@ protected:
     void    UpdateJitterBufferFrame();
     void    UpdateSoundCardFrame();
     void    UpdateSoundChannelSelectionFrame();
+    void    UpdateCentralServerDependency();
     QString GenSndCrdBufferDelayString ( const int iFrameSize,
                                          const QString strAddText = "" );
 
@@ -88,6 +88,7 @@ protected:
     void OnNetBufValueChanged ( int value );
     void OnNetBufServerValueChanged ( int value );
     void OnAutoJitBufStateChanged ( int value );
+    void OnGUIDesignFancyStateChanged ( int value );
     void OnDisplayChannelLevelsStateChanged ( int value );
     void OnEnableOPUS64StateChanged ( int value );
     void OnCentralServerAddressEditingFinished();
@@ -100,7 +101,7 @@ protected:
     void OnROutChanActivated ( int iChanIdx );
     void OnAudioChannelsActivated ( int iChanIdx );
     void OnAudioQualityActivated ( int iQualityIdx );
-    void OnGUIDesignActivated ( int iDesignIdx );
+    void OnCentServAddrTypeActivated ( int iTypeIdx );
     void OnDriverSetupClicked();
 
 signals:

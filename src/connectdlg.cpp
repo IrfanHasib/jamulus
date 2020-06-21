@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -26,14 +26,13 @@
 
 
 /* Implementation *************************************************************/
-CConnectDlg::CConnectDlg ( CClient*        pNCliP,
-                           const bool      bNewShowCompleteRegList,
-                           QWidget*        parent,
+CConnectDlg::CConnectDlg ( const bool bNewShowCompleteRegList,
+                           QWidget* parent,
                            Qt::WindowFlags f )
     : QDialog ( parent, f ),
-      pClient                  ( pNCliP ),
       strCentralServerAddress  ( "" ),
       strSelectedAddress       ( "" ),
+      strPassword              ( "" ),
       strSelectedServerName    ( "" ),
       bShowCompleteRegList     ( bNewShowCompleteRegList ),
       bServerListReceived      ( false ),
@@ -46,24 +45,28 @@ CConnectDlg::CConnectDlg ( CClient*        pNCliP,
 
     // Add help text to controls -----------------------------------------------
     // server list
-    lvwServers->setWhatsThis ( "<b>" + tr ( "Server List" ) + ":</b> " + tr (
-        "The Connection Setup window shows a list of available servers. "
-        "Server operators can optionally list their servers by music genre. "
-        "Use the List dropdown to select a genre, click on the server you want "
-        "to join and press the Connect button to connect to it. Alternatively, "
-        "double click on on the server name. Permanent servers (those that have "
-        "been listed for longer than 48 hours) are shown in bold." ) );
+    lvwServers->setWhatsThis ( tr ( "<b>Server List:</b> The server list shows "
+        "a list of available servers which are registered at the central "
+        "server. Select a server from the list and press the connect button to "
+        "connect to this server. Alternatively, double click a server from "
+        "the list to connect to it. If a server is occupied, a list of the "
+        "connected musicians is available by expanding the list item. "
+        "Permanent servers are shown in bold font.<br>"
+        "Note that it may take some time to retrieve the server list from the "
+        "central server. If no valid central server address is specified in "
+        "the settings, no server list will be available." ) );
 
     lvwServers->setAccessibleName ( tr ( "Server list view" ) );
 
     // server address
-    QString strServAddrH = "<b>" + tr ( "Server Address" ) + ":</b> " + tr (
-        "If you know the IP address or URL of a server, you can connect to it "
-        "using the Server name/Address field. An optional port number can be added after the IP "
-        "address or URL using a colon as a separator, e.g, "
+    QString strServAddrH = tr ( "<b>Server Address:</b> The IP address or URL "
+        "of the server running the " ) + APP_NAME + tr ( " server software "
+        "must be set here. An optional port number can be added after the IP "
+        "address or URL using a comma as a separator, e.g, <i>"
         "example.org:" ) +
-        QString().setNum ( DEFAULT_PORT_NUMBER ) + tr ( ". The field will "
-        "also show a list of the most recently used server addresses.");
+        QString().setNum ( LLCON_DEFAULT_PORT_NUMBER ) + tr ( "</i>. A list of "
+        "the most recent used server IP addresses or URLs is available for "
+        "selection." );
 
     lblServerAddr->setWhatsThis ( strServAddrH );
     cbxServerAddr->setWhatsThis ( strServAddrH );
@@ -72,27 +75,14 @@ CConnectDlg::CConnectDlg ( CClient*        pNCliP,
     cbxServerAddr->setAccessibleDescription ( tr ( "Holds the current server "
         "IP address or URL. It also stores old URLs in the combo box list." ) );
 
-    // central server address type combo box
-    cbxCentServAddrType->clear();
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_DEFAULT ) );
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_ALL_GENRES ) );
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_GENRE_ROCK ) );
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_GENRE_JAZZ ) );
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_GENRE_CLASSICAL_FOLK ) );
-    cbxCentServAddrType->addItem ( csCentServAddrTypeToString ( AT_CUSTOM ) );
-
-    cbxCentServAddrType->setWhatsThis ( "<b>" + tr ( "Server List Selection" ) + ":</b> " + tr (
-        "Selects the server list to be shown." ) );
-    cbxCentServAddrType->setAccessibleName ( tr ( "Server list selection combo box" ) );
-
     // filter
-    edtFilter->setWhatsThis ( "<b>" + tr ( "Filter" ) + ":</b> " + tr ( "The server "
-        "list is filtered by the given text. Note that the filter is case insensitive." ) );
+    edtFilter->setWhatsThis ( tr ( "<b>Filter:</b> The server list is filered "
+        "by the given text. Note that the filter is case insensitive." ) );
     edtFilter->setAccessibleName ( tr ( "Filter edit box" ) );
 
     // show all mucisians
-    chbExpandAll->setWhatsThis ( "<b>" + tr ( "Show All Musicians" ) + ":</b> " + tr (
-        "If you check this check box, the musicians of all servers are shown. If you "
+    chbExpandAll->setWhatsThis ( tr ( "<b>Show All Musicians:</b> If you check "
+        "this check box, the musicians of all servers are shown. If you "
         "uncheck the check box, all list view items are collapsed.") );
     chbExpandAll->setAccessibleName ( tr ( "Show all musicians check box" ) );
 
@@ -126,9 +116,11 @@ CConnectDlg::CConnectDlg ( CClient*        pNCliP,
     // 3: location
     // 4: minimum ping time (invisible)
     // 5: maximum number of clients (invisible)
-    lvwServers->setColumnCount ( 6 );
+    // 6: number of musicians (just the number, invisible)
+    lvwServers->setColumnCount ( 7 );
     lvwServers->hideColumn ( 4 );
     lvwServers->hideColumn ( 5 );
+    lvwServers->hideColumn ( 6 );
 
     // per default the root shall not be decorated (to save space)
     lvwServers->setRootIsDecorated ( false );
@@ -151,44 +143,43 @@ CConnectDlg::CConnectDlg ( CClient*        pNCliP,
 
     // Connections -------------------------------------------------------------
     // list view
-    QObject::connect ( lvwServers, &QTreeWidget::itemSelectionChanged,
-        this, &CConnectDlg::OnServerListItemSelectionChanged );
+    QObject::connect ( lvwServers,
+        SIGNAL ( itemSelectionChanged() ),
+        this, SLOT ( OnServerListItemSelectionChanged() ) );
 
-    QObject::connect ( lvwServers, &QTreeWidget::itemDoubleClicked,
-        this, &CConnectDlg::OnServerListItemDoubleClicked );
+    QObject::connect ( lvwServers,
+        SIGNAL ( itemDoubleClicked ( QTreeWidgetItem*, int ) ),
+        this, SLOT ( OnServerListItemDoubleClicked ( QTreeWidgetItem*, int ) ) );
 
-    // to get default return key behaviour working
-    QObject::connect ( lvwServers, &QTreeWidget::activated,
-        this, &CConnectDlg::OnConnectClicked );
+    QObject::connect ( lvwServers, // to get default return key behaviour working
+        SIGNAL ( activated ( QModelIndex ) ),
+        this, SLOT ( OnConnectClicked() ) );
 
     // line edit
-    QObject::connect ( edtFilter, &QLineEdit::textEdited,
-        this, &CConnectDlg::OnFilterTextEdited );
+    QObject::connect ( edtFilter, SIGNAL ( textEdited ( const QString& ) ),
+        this, SLOT ( OnFilterTextEdited ( const QString& ) ) );
 
     // combo boxes
-    QObject::connect ( cbxServerAddr, &QComboBox::editTextChanged,
-        this, &CConnectDlg::OnServerAddrEditTextChanged );
-
-    QObject::connect ( cbxCentServAddrType, static_cast<void (QComboBox::*) ( int )> ( &QComboBox::activated ),
-        this, &CConnectDlg::OnCentServAddrTypeChanged );
+    QObject::connect ( cbxServerAddr, SIGNAL ( editTextChanged ( const QString& ) ),
+        this, SLOT ( OnServerAddrEditTextChanged ( const QString& ) ) );
 
     // check boxes
-    QObject::connect ( chbExpandAll, &QCheckBox::stateChanged,
-        this, &CConnectDlg::OnExpandAllStateChanged );
+    QObject::connect ( chbExpandAll, SIGNAL ( stateChanged ( int ) ),
+        this, SLOT ( OnExpandAllStateChanged ( int ) ) );
 
     // buttons
-    QObject::connect ( butCancel, &QPushButton::clicked,
-        this, &CConnectDlg::close );
+    QObject::connect ( butCancel, SIGNAL ( clicked() ),
+        this, SLOT ( close() ) );
 
-    QObject::connect ( butConnect, &QPushButton::clicked,
-        this, &CConnectDlg::OnConnectClicked );
+    QObject::connect ( butConnect, SIGNAL ( clicked() ),
+        this, SLOT ( OnConnectClicked() ) );
 
     // timers
-    QObject::connect ( &TimerPing, &QTimer::timeout,
-        this, &CConnectDlg::OnTimerPing );
+    QObject::connect ( &TimerPing, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerPing() ) );
 
-    QObject::connect ( &TimerReRequestServList, &QTimer::timeout,
-        this, &CConnectDlg::OnTimerReRequestServList );
+    QObject::connect ( &TimerReRequestServList, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerReRequestServList() ) );
 }
 
 void CConnectDlg::Init ( const CVector<QString>& vstrIPAddresses )
@@ -222,6 +213,7 @@ void CConnectDlg::RequestServerList()
 
     // clear current address and name
     strSelectedAddress    = "";
+    strPassword           = "";
     strSelectedServerName = "";
 
     // clear server list view
@@ -229,11 +221,6 @@ void CConnectDlg::RequestServerList()
 
     // clear filter edit box
     edtFilter->setText ( "" );
-
-    // update list combo box (disable events to avoid a signal)
-    cbxCentServAddrType->blockSignals ( true );
-    cbxCentServAddrType->setCurrentIndex ( static_cast<int> ( pClient->GetCentralServerAddressType() ) );
-    cbxCentServAddrType->blockSignals ( false );
 
     // get the IP address of the central server (using the ParseNetworAddress
     // function) when the connect dialog is opened, this seems to be the correct
@@ -319,7 +306,7 @@ void CConnectDlg::SetServerList ( const CHostAddress&         InetAddr,
             // IP address and port (use IP number without last byte)
             // Definition: If the port number is the default port number, we do
             // not show it.
-            if ( vecServerInfo[iIdx].HostAddr.iPort == DEFAULT_PORT_NUMBER )
+            if ( vecServerInfo[iIdx].HostAddr.iPort == LLCON_DEFAULT_PORT_NUMBER )
             {
                 // only show IP number, no port number
                 pNewListViewItem->setText ( 0, CurHostAddress.toString ( CHostAddress::SM_IP_NO_LAST_BYTE ) );
@@ -388,6 +375,9 @@ void CConnectDlg::SetServerList ( const CHostAddress&         InetAddr,
         // store the maximum number of clients
         pNewListViewItem->setText ( 5, QString().setNum ( vecServerInfo[iIdx].iMaxNumClients ) );
 
+        // initialize the current number of connected clients
+        pNewListViewItem->setText ( 6, QString().setNum ( 0 ) );
+
         // store host address
         pNewListViewItem->setData ( 0, Qt::UserRole, CurHostAddress.toString() );
 
@@ -428,7 +418,7 @@ void CConnectDlg::SetConnClientsList ( const CHostAddress&          InetAddr,
             pNewChildListViewItem->setFirstColumnSpanned ( true );
 
             // set the clients name
-            QString sClientText = vecChanInfo[i].strName;
+            QString sClientText = vecChanInfo[i].GenNameForDisplay();
 
             // set the icon: country flag has priority over instrument
             bool bCountryFlagIsUsed = false;
@@ -641,6 +631,7 @@ void CConnectDlg::OnConnectClicked()
         // get host address from selected list view item as a string
         strSelectedAddress =
             pCurSelTopListItem->data ( 0, Qt::UserRole ).toString();
+        strPassword = cbxServerPassword->currentText();
 
         // store selected server name
         strSelectedServerName = pCurSelTopListItem->text ( 0 );
@@ -651,6 +642,7 @@ void CConnectDlg::OnConnectClicked()
     else
     {
         strSelectedAddress = cbxServerAddr->currentText();
+        strPassword = cbxServerPassword->currentText();
     }
 
     // tell the parent window that the connection shall be initiated
@@ -679,6 +671,14 @@ void CConnectDlg::OnTimerPing()
 #else
             emit CreateCLServerListPingMes ( CurServerAddress );
 #endif
+
+            // check if the number of child list items matches the number of
+            // connected clients, if not then request the client names
+            if ( lvwServers->topLevelItem ( iIdx )->text ( 6 ).toInt() !=
+                 lvwServers->topLevelItem ( iIdx )->childCount() )
+            {
+                emit CreateCLServerListReqConnClientsListMes ( CurServerAddress );
+            }
         }
     }
 }
@@ -764,12 +764,8 @@ void CConnectDlg::SetPingTimeAndNumClientsResult ( const CHostAddress& InetAddr,
                 setText ( 2, QString().setNum ( iNumClients ) );
         }
 
-        // check if the number of child list items matches the number of
-        // connected clients, if not then request the client names
-        if ( iNumClients != pCurListViewItem->childCount() )
-        {
-            emit CreateCLServerListReqConnClientsListMes ( InetAddr );
-        }
+        // update number of clients value (hidden)
+        pCurListViewItem->setText ( 6, QString().setNum ( iNumClients ) );
 
         // this is the first time a ping time was received, set item to visible
         if ( bIsFirstPing )

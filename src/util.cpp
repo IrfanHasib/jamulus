@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -165,24 +165,20 @@ uint32_t CCRC::GetCRC()
     three series allpass units, followed by four parallel comb filters, and two
     decorrelation delay lines in parallel at the output.
 */
-void CAudioReverb::Init ( const EAudChanConf eNAudioChannelConf,
-                          const int          iNStereoBlockSizeSam,
-                          const int          iSampleRate,
-                          const double       rT60 )
+void CAudioReverb::Init ( const int    iSampleRate,
+                          const double rT60 )
 {
-    // store paramters
-    eAudioChannelConf   = eNAudioChannelConf;
-    iStereoBlockSizeSam = iNStereoBlockSizeSam;
+    int delay, i;
 
     // delay lengths for 44100 Hz sample rate
-    int          lengths[9] = { 1116, 1356, 1422, 1617, 225, 341, 441, 211, 179 };
-    const double scaler     = static_cast<double> ( iSampleRate ) / 44100.0;
+    int lengths[9] = { 1116, 1356, 1422, 1617, 225, 341, 441, 211, 179 };
+    const double scaler = static_cast<double> ( iSampleRate ) / 44100.0;
 
     if ( scaler != 1.0 )
     {
-        for ( int i = 0; i < 9; i++ )
+        for ( i = 0; i < 9; i++ )
         {
-            int delay = static_cast<int> ( floor ( scaler * lengths[i] ) );
+            delay = static_cast<int> ( floor ( scaler * lengths[i] ) );
 
             if ( ( delay & 1 ) == 0 )
             {
@@ -198,12 +194,12 @@ void CAudioReverb::Init ( const EAudChanConf eNAudioChannelConf,
         }
     }
 
-    for ( int i = 0; i < 3; i++ )
+    for ( i = 0; i < 3; i++ )
     {
         allpassDelays[i].Init ( lengths[i + 4] );
     }
 
-    for ( int i = 0; i < 4; i++ )
+    for ( i = 0; i < 4; i++ )
     {
         combDelays[i].Init ( lengths[i] );
         combFilters[i].setPole ( 0.2 );
@@ -289,81 +285,58 @@ double CAudioReverb::COnePole::Calc ( const double dIn )
     return dLastSample;
 }
 
-void CAudioReverb::Process ( CVector<int16_t>& vecsStereoInOut,
-                             const bool        bReverbOnLeftChan,
-                             const double      dAttenuation )
+void CAudioReverb::ProcessSample ( int16_t&     iInputOutputLeft,
+                                   int16_t&     iInputOutputRight,
+                                   const double dAttenuation )
 {
-    double dMixedInput, temp, temp0, temp1, temp2;
+    // compute one output sample
+    double temp, temp0, temp1, temp2;
 
-    for ( int i = 0; i < iStereoBlockSizeSam; i += 2 )
-    {
-        // we sum up the stereo input channels (in case mono input is used, a zero
-        // shall be input for the right channel)
-        if ( eAudioChannelConf == CC_STEREO )
-        {
-            dMixedInput = 0.5 * ( vecsStereoInOut[i] + vecsStereoInOut[i + 1] );
-        }
-        else
-        {
-            if ( bReverbOnLeftChan )
-            {
-                dMixedInput = vecsStereoInOut[i];
-            }
-            else
-            {
-                dMixedInput = vecsStereoInOut[i + 1];
-            }
-        }
+    // we sum up the stereo input channels (in case mono input is used, a zero
+    // shall be input for the right channel)
+    const double dMixedInput = 0.5 * ( iInputOutputLeft + iInputOutputRight );
 
-        temp = allpassDelays[0].Get();
-        temp0 = allpassCoefficient * temp;
-        temp0 += dMixedInput;
-        allpassDelays[0].Add ( temp0 );
-        temp0 = - ( allpassCoefficient * temp0 ) + temp;
+    temp = allpassDelays[0].Get();
+    temp0 = allpassCoefficient * temp;
+    temp0 += dMixedInput;
+    allpassDelays[0].Add ( temp0 );
+    temp0 = - ( allpassCoefficient * temp0 ) + temp;
 
-        temp = allpassDelays[1].Get();
-        temp1 = allpassCoefficient * temp;
-        temp1 += temp0;
-        allpassDelays[1].Add ( temp1 );
-        temp1 = - ( allpassCoefficient * temp1 ) + temp;
+    temp = allpassDelays[1].Get();
+    temp1 = allpassCoefficient * temp;
+    temp1 += temp0;
+    allpassDelays[1].Add ( temp1 );
+    temp1 = - ( allpassCoefficient * temp1 ) + temp;
 
-        temp = allpassDelays[2].Get();
-        temp2 = allpassCoefficient * temp;
-        temp2 += temp1;
-        allpassDelays[2].Add ( temp2 );
-        temp2 = - ( allpassCoefficient * temp2 ) + temp;
+    temp = allpassDelays[2].Get();
+    temp2 = allpassCoefficient * temp;
+    temp2 += temp1;
+    allpassDelays[2].Add ( temp2 );
+    temp2 = - ( allpassCoefficient * temp2 ) + temp;
 
-        const double temp3 = temp2 + combFilters[0].Calc ( combCoefficient[0] * combDelays[0].Get() );
-        const double temp4 = temp2 + combFilters[1].Calc ( combCoefficient[1] * combDelays[1].Get() );
-        const double temp5 = temp2 + combFilters[2].Calc ( combCoefficient[2] * combDelays[2].Get() );
-        const double temp6 = temp2 + combFilters[3].Calc ( combCoefficient[3] * combDelays[3].Get() );
+    const double temp3 = temp2 + combFilters[0].Calc ( combCoefficient[0] * combDelays[0].Get() );
+    const double temp4 = temp2 + combFilters[1].Calc ( combCoefficient[1] * combDelays[1].Get() );
+    const double temp5 = temp2 + combFilters[2].Calc ( combCoefficient[2] * combDelays[2].Get() );
+    const double temp6 = temp2 + combFilters[3].Calc ( combCoefficient[3] * combDelays[3].Get() );
 
-        combDelays[0].Add ( temp3 );
-        combDelays[1].Add ( temp4 );
-        combDelays[2].Add ( temp5 );
-        combDelays[3].Add ( temp6 );
+    combDelays[0].Add ( temp3 );
+    combDelays[1].Add ( temp4 );
+    combDelays[2].Add ( temp5 );
+    combDelays[3].Add ( temp6 );
 
-        const double filtout = temp3 + temp4 + temp5 + temp6;
+    const double filtout = temp3 + temp4 + temp5 + temp6;
 
-        outLeftDelay.Add  ( filtout );
-        outRightDelay.Add ( filtout );
+    outLeftDelay.Add ( filtout );
+    outRightDelay.Add ( filtout );
 
-        // inplace apply the attenuated reverb signal (for stereo always apply
-        // reverberation effect on both channels)
-        if ( ( eAudioChannelConf == CC_STEREO ) || bReverbOnLeftChan )
-        {
-            vecsStereoInOut[i] = Double2Short (
-                ( 1.0 - dAttenuation ) * vecsStereoInOut[i] +
-                0.5 * dAttenuation * outLeftDelay.Get() );
-        }
+    // inplace apply the attenuated reverb signal
+    iInputOutputLeft  = Double2Short (
+        ( 1.0 - dAttenuation ) * iInputOutputLeft +
+        0.5 * dAttenuation * outLeftDelay.Get() );
 
-        if ( ( eAudioChannelConf == CC_STEREO ) || !bReverbOnLeftChan )
-        {
-            vecsStereoInOut[i + 1] = Double2Short (
-                ( 1.0 - dAttenuation ) * vecsStereoInOut[i + 1] +
-                0.5 * dAttenuation * outRightDelay.Get() );
-        }
-    }
+    iInputOutputRight = Double2Short (
+        ( 1.0 - dAttenuation ) * iInputOutputRight +
+        0.5 * dAttenuation * outRightDelay.Get() );
 }
 
 
@@ -371,17 +344,20 @@ void CAudioReverb::Process ( CVector<int16_t>& vecsStereoInOut,
 * GUI Utilities                                                                *
 \******************************************************************************/
 // About dialog ----------------------------------------------------------------
-#ifndef HEADLESS
 CAboutDlg::CAboutDlg ( QWidget* parent ) : QDialog ( parent )
 {
     setupUi ( this );
 
-    // general description of software
-    txvAbout->setText (
-        "<p>" + tr ( "This app enables musicians to perform real-time jam sessions "
-        "over the internet." ) + "<br>" + tr ( "There is a server which collects "
-        " the audio data from each client, mixes the audio data and sends the mix "
-        " back to each client." ) + "</p>"
+    // set the text for the about dialog html text control
+    txvCredits->setOpenExternalLinks ( true );
+    txvCredits->setText (
+        "<p>" // general description of software
+        "<big>" + tr ( "The " ) + APP_NAME +
+        tr ( " software enables musicians to perform real-time jam sessions "
+        "over the internet. There is a " ) + APP_NAME + tr ( " "
+        "server which collects the audio data from each " ) +
+        APP_NAME + tr ( " client, mixes the audio data and sends the mix back "
+        "to each client." ) + "</big></p><br>"
         "<p><font face=\"courier\">" // GPL header text
         "This program is free software; you can redistribute it and/or modify "
         "it under the terms of the GNU General Public License as published by "
@@ -394,61 +370,27 @@ CAboutDlg::CAboutDlg ( QWidget* parent ) : QDialog ( parent )
         "License along with his program; if not, write to the Free Software "
         "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 "
         "USA"
-        "</font></p>" );
-
-    // libraries used by this compilation
-    txvLibraries->setText (
-        tr ( "This app uses the following libraries, resources or code snippets:" ) +
-        "<br><p>" + tr ( "Qt cross-platform application framework" ) +
-        ", <i><a href=""http://www.qt.io"">http://www.qt.io</a></i></p>"
-        "<p>Opus Interactive Audio Codec"
-        ", <i><a href=""http://www.opus-codec.org"">http://www.opus-codec.org</a></i></p>"
-        "<p>" + tr ( "Audio reverberation code by Perry R. Cook and Gary P. Scavone" ) +
-        ", 1995 - 2004, <i><a href=""http://ccrma.stanford.edu/software/stk"">"
-        "The Synthesis ToolKit in C++ (STK)</a></i></p>"
-        "<p>" + tr ( "Some pixmaps are from the" ) + " Open Clip Art Library (OCAL), "
-        "<i><a href=""http://openclipart.org"">http://openclipart.org</a></i></p>"
-        "<p>" + tr ( "Country flag icons by Mark James" ) +
-        ", <i><a href=""http://www.famfamfam.com"">http://www.famfamfam.com</a></i></p>" );
-
-    // contributors list
-    txvContributors->setText (
-        "<p>Peter L. Jones (<a href=""https://github.com/pljones"">pljones</a>)</p>"
-        "<p>Jonathan Baker-Bates (<a href=""https://github.com/gilgongo"">gilgongo</a>)</p>"
-        "<p>Daniele Masato (<a href=""https://github.com/doloopuntil"">doloopuntil</a>)</p>"
-        "<p>Simon Tomlinson (<a href=""https://github.com/sthenos"">sthenos</a>)</p>"
-        "<p>Marc jr. Landolt (<a href=""https://github.com/braindef"">braindef</a>)</p>"
-        "<p>Olivier Humbert (<a href=""https://github.com/trebmuh"">trebmuh</a>)</p>"
-        "<p>Tarmo Johannes (<a href=""https://github.com/tarmoj"">tarmoj</a>)</p>"
-        "<p>mirabilos (<a href=""https://github.com/mirabilos"">mirabilos</a>)</p>"
-        "<p>Hector Martin (<a href=""https://github.com/marcan"">marcan</a>)</p>"
-        "<p>newlaurent62 (<a href=""https://github.com/newlaurent62"">newlaurent62</a>)</p>"
-        "<p>AronVietti (<a href=""https://github.com/AronVietti"">AronVietti</a>)</p>"
-        "<p>Emlyn Bolton (<a href=""https://github.com/emlynmac"">emlynmac</a>)</p>"
-        "<p>Jos van den Oever (<a href=""https://github.com/vandenoever"">vandenoever</a>)</p>"
-        "<p>Tormod Volden (<a href=""https://github.com/tormodvolden"">tormodvolden</a>)</p>"
-        "<p>Alberstein8 (<a href=""https://github.com/Alberstein8"">Alberstein8</a>)</p>"
-        "<p>Gauthier Fleutot Östervall (<a href=""https://github.com/fleutot"">fleutot</a>)</p>"
-        "<p>Stanislas Michalak (<a href=""https://github.com/stanislas-m"">stanislas-m</a>)</p>"
-        "<p>JP Cimalando (<a href=""https://github.com/jpcima"">jpcima</a>)</p>"
-        "<p>Adam Sampson (<a href=""https://github.com/atsampson"">atsampson</a>)</p>"
-        "<br>" + tr ( "For details on the contributions check out the " ) +
-        "<a href=""https://github.com/corrados/jamulus/graphs/contributors"">" + tr ( "Github Contributors list" ) + "</a>." );
-
-    // translators
-    txvTranslation->setText (
-        "<p><b>" + tr ( "Spanish" ) + "</b></p>"
-        "<p>Daryl Hanlon (<a href=""https://github.com/ignotus666"">ignotus666</a>)</p>"
-        "<p><b>" + tr ( "French" ) + "</b></p>"
-        "<p>Olivier Humbert (<a href=""https://github.com/trebmuh"">trebmuh</a>)</p>"
-        "<p><b>" + tr ( "Portuguese" ) + "</b></p>"
-        "<p>Miguel de Matos (<a href=""https://github.com/Snayler"">Snayler</a>)</p>"
-        "<p><b>" + tr ( "Dutch" ) + "</b></p>"
-        "<p>Jeroen Geertzen (<a href=""https://github.com/jerogee"">jerogee</a>)</p>"
-        "<p><b>" + tr ( "Italian" ) + "</b></p>"
-        "<p>Giuseppe Sapienza (<a href=""https://github.com/dzpex"">dzpex</a>)</p>"
-        "<p><b>" + tr ( "German" ) + "</b></p>"
-        "<p>Volker Fischer (<a href=""https://github.com/corrados"">corrados</a>)</p>" );
+        "</font></p><br>"
+        "<p><b>" + APP_NAME + // libraries used by this compilation
+        tr ( " uses the following libraries, resources or code snippets:" ) +
+        "</b></p>"
+        "<ul>"
+        "<li>Qt cross-platform application framework: "
+        "<i><a href=""http://www.qt.io"">http://www.qt.io</a></i></li>"
+        "<li>Opus Interactive Audio Codec: "
+        "<i><a href=""http://www.opus-codec.org"">http://www.opus-codec.org</a></i></li>"
+        "<li>Audio reverberation code: by Perry R. Cook and Gary P. Scavone, "
+        "1995 - 2004 (taken from "
+        "<i><a href=""http://ccrma.stanford.edu/software/stk"">"
+        "The Synthesis ToolKit in C++ (STK)</a></i>)</li>"
+        "<li>Some pixmaps are from the Open Clip Art Library (OCAL): "
+        "<i><a href=""http://openclipart.org"">http://openclipart.org</a></i></li>"
+        "<li>Country flag icons from Mark James: "
+        "<i><a href=""http://www.famfamfam.com"">http://www.famfamfam.com</a></i></li>"
+        "</ul>"
+        "We would like to acknowledge the contributors listed in the "
+        "<a href=""https://github.com/corrados/jamulus/graphs/contributors"">Github Contributors list</a>"
+        "</center><br>");
 
     // set version number in about dialog
     lblVersion->setText ( GetVersionAndNameStr() );
@@ -456,6 +398,53 @@ CAboutDlg::CAboutDlg ( QWidget* parent ) : QDialog ( parent )
     // set window title
     setWindowTitle ( tr ( "About " ) + APP_NAME );
 }
+
+QString CAboutDlg::GetVersionAndNameStr ( const bool bWithHtml )
+{
+    QString strVersionText = "";
+
+    // name, short description and GPL hint
+    if ( bWithHtml )
+    {
+        strVersionText += "<center><b>";
+    }
+    else
+    {
+        strVersionText += " *** ";
+    }
+
+    strVersionText += APP_NAME + tr ( ", Version " ) + VERSION;
+
+    if ( bWithHtml )
+    {
+        strVersionText += "</b><br>";
+    }
+    else
+    {
+        strVersionText += "\n *** ";
+    }
+
+    strVersionText += tr ( "Internet Jam Session Software" );
+
+    if ( bWithHtml )
+    {
+        strVersionText += "<br>";
+    }
+    else
+    {
+        strVersionText += "\n *** ";
+    }
+
+    strVersionText += tr ( "Under the GNU General Public License (GPL)" );
+
+    if ( bWithHtml )
+    {
+        strVersionText += "</center>";
+    }
+
+    return strVersionText;
+}
+
 
 // Licence dialog --------------------------------------------------------------
 CLicenceDlg::CLicenceDlg ( QWidget* parent ) : QDialog ( parent )
@@ -467,15 +456,15 @@ CLicenceDlg::CLicenceDlg ( QWidget* parent ) : QDialog ( parent )
     - Accept button (disabled if check box not checked)
     - Decline button
 */
-    setWindowIcon ( QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) ) );
+    //setWindowIcon ( QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) ) );
     resize ( 700, 450 );
 
     QVBoxLayout*  pLayout    = new QVBoxLayout ( this );
     QHBoxLayout*  pSubLayout = new QHBoxLayout;
     QTextBrowser* txvLicence = new QTextBrowser ( this );
-    QCheckBox*    chbAgree   = new QCheckBox ( tr ( "I &agree to the above licence terms" ), this );
-    butAccept                = new QPushButton ( tr ( "Accept" ), this );
-    QPushButton*  butDecline = new QPushButton ( tr ( "Decline" ), this );
+    QCheckBox*    chbAgree   = new QCheckBox ( "I &agree to the above licence terms", this );
+    butAccept                = new QPushButton ( "Accept", this );
+    QPushButton*  butDecline = new QPushButton ( "Decline", this );
 
     pSubLayout->addStretch();
     pSubLayout->addWidget ( chbAgree );
@@ -497,10 +486,10 @@ CLicenceDlg::CLicenceDlg ( QWidget* parent ) : QDialog ( parent )
         "You agree that all data, sounds, or other works transmitted to this server "
         "are owned and created by you or your licensors, and that you are making these "
         "data, sounds or other works available via the following Creative Commons "
-        "License (for more information on this license, see " ) +
+        "License (for more information on this license, see "
         "<i><a href=""http://creativecommons.org/licenses/by-nc-sa/4.0"">"
-        "http://creativecommons.org/licenses/by-nc-sa/4.0</a></i>):</big></p>"
-        "<h3>Attribution-NonCommercial-ShareAlike 4.0</h3>"
+        "http://creativecommons.org/licenses/by-nc-sa/4.0</a></i>):" ) + "</big></p>" +
+        "<h3>Attribution-NonCommercial-ShareAlike 4.0</h3>" +
         "<p>" + tr ( "You are free to:" ) +
         "<ul>"
         "<li><b>" + tr ( "Share" ) + "</b> - " +
@@ -524,14 +513,14 @@ CLicenceDlg::CLicenceDlg ( QWidget* parent ) : QDialog ( parent )
         tr ( "You may not apply legal terms or technological measures that legally restrict "
         "others from doing anything the license permits." ) + "</p>" );
 
-    QObject::connect ( chbAgree, &QCheckBox::stateChanged,
-        this, &CLicenceDlg::OnAgreeStateChanged );
+    QObject::connect ( chbAgree, SIGNAL ( stateChanged ( int ) ),
+        this, SLOT ( OnAgreeStateChanged ( int ) ) );
 
-    QObject::connect ( butAccept, &QPushButton::clicked,
-        this, &CLicenceDlg::accept );
+    QObject::connect ( butAccept, SIGNAL ( clicked() ),
+        this, SLOT ( accept() ) );
 
-    QObject::connect ( butDecline, &QPushButton::clicked,
-        this, &CLicenceDlg::reject );
+    QObject::connect ( butDecline, SIGNAL ( clicked() ),
+        this, SLOT ( reject() ) );
 }
 
 
@@ -550,22 +539,22 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
     - label with combo box for skill level
     - OK button
 */
-    setWindowTitle ( tr ( "Musician Profile" ) );
-    setWindowIcon ( QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) ) );
+    setWindowTitle ( "Musician Profile" );
+    //setWindowIcon ( QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) ) );
 
     QVBoxLayout* pLayout        = new QVBoxLayout ( this );
     QHBoxLayout* pButSubLayout  = new QHBoxLayout;
-    QLabel*      plblAlias      = new QLabel ( tr ( "Alias/Name" ), this );
+    QLabel*      plblAlias      = new QLabel ( "Alias/Name", this );
     pedtAlias                   = new QLineEdit ( this );
-    QLabel*      plblInstrument = new QLabel ( tr ( "Instrument" ), this );
+    QLabel*      plblInstrument = new QLabel ( "Instrument", this );
     pcbxInstrument              = new QComboBox ( this );
-    QLabel*      plblCountry    = new QLabel ( tr ( "Country" ), this );
+    QLabel*      plblCountry    = new QLabel ( "Country", this );
     pcbxCountry                 = new QComboBox ( this );
-    QLabel*      plblCity       = new QLabel ( tr ( "City" ), this );
+    QLabel*      plblCity       = new QLabel ( "City", this );
     pedtCity                    = new QLineEdit ( this );
-    QLabel*      plblSkill      = new QLabel ( tr ( "Skill" ), this );
+    QLabel*      plblSkill      = new QLabel ( "Skill", this );
     pcbxSkill                   = new QComboBox ( this );
-    QPushButton* butClose       = new QPushButton ( tr ( "&Close" ), this );
+    QPushButton* butClose       = new QPushButton ( "&Close", this );
 
     QGridLayout* pGridLayout = new QGridLayout;
     plblAlias->setSizePolicy ( QSizePolicy::Minimum, QSizePolicy::Expanding );
@@ -603,30 +592,12 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
     // add an entry for all known instruments
     for ( int iCurInst = 0; iCurInst < CInstPictures::GetNumAvailableInst(); iCurInst++ )
     {
-        // create a combo box item with text, image and background color
-        QColor InstrColor;
-
-        pcbxInstrument->addItem ( QIcon ( CInstPictures::GetResourceReference ( iCurInst ) ),
-                                  CInstPictures::GetName ( iCurInst ),
-                                  iCurInst );
-
-        switch ( CInstPictures::GetCategory ( iCurInst ) )
-        {
-        case CInstPictures::IC_OTHER_INSTRUMENT:      InstrColor = QColor ( Qt::blue );   break;
-        case CInstPictures::IC_WIND_INSTRUMENT:       InstrColor = QColor ( Qt::green );  break;
-        case CInstPictures::IC_STRING_INSTRUMENT:     InstrColor = QColor ( Qt::red );    break;
-        case CInstPictures::IC_PLUCKING_INSTRUMENT:   InstrColor = QColor ( Qt::cyan );   break;
-        case CInstPictures::IC_PERCUSSION_INSTRUMENT: InstrColor = QColor ( Qt::white );  break;
-        case CInstPictures::IC_KEYBOARD_INSTRUMENT:   InstrColor = QColor ( Qt::yellow ); break;
-        case CInstPictures::IC_MULTIPLE_INSTRUMENT:   InstrColor = QColor ( Qt::black );  break;
-        }
-
-        InstrColor.setAlpha ( 10 );
-        pcbxInstrument->setItemData ( iCurInst, InstrColor, Qt::BackgroundRole );
+        // create a combo box item with text and image
+        pcbxInstrument->addItem (
+            QIcon ( CInstPictures::GetResourceReference ( iCurInst ) ),
+            CInstPictures::GetName ( iCurInst ),
+            iCurInst );
     }
-
-    // sort the items in alphabetical order
-    pcbxInstrument->model()->sort ( 0 );
 
 
     // Country flag icons combo box --------------------------------------------
@@ -638,7 +609,8 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
         if ( static_cast<QLocale::Country> ( iCurCntry ) != QLocale::AnyCountry )
         {
             // get current country enum
-            QLocale::Country eCountry = static_cast<QLocale::Country> ( iCurCntry );
+            QLocale::Country eCountry =
+                static_cast<QLocale::Country> ( iCurCntry );
 
             // try to load icon from resource file name
             QIcon CurFlagIcon;
@@ -663,7 +635,7 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
     FlagNoneIcon.addFile ( ":/png/flags/res/flags/flagnone.png" );
     pcbxCountry->insertItem ( 0,
                               FlagNoneIcon,
-                              tr ( "None" ),
+                              "None",
                               static_cast<int> ( QLocale::AnyCountry ) );
 
 
@@ -675,38 +647,39 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
                                       RGBCOL_G_SL_NOT_SET,
                                       RGBCOL_B_SL_NOT_SET ) );
 
-    pcbxSkill->addItem ( QIcon ( SLPixmap ), tr ( "None" ), SL_NOT_SET );
+    pcbxSkill->addItem ( QIcon ( SLPixmap ), "None", SL_NOT_SET );
 
     SLPixmap.fill ( QColor::fromRgb ( RGBCOL_R_SL_BEGINNER,
                                       RGBCOL_G_SL_BEGINNER,
                                       RGBCOL_B_SL_BEGINNER ) );
 
-    pcbxSkill->addItem ( QIcon ( SLPixmap ), tr ( "Beginner" ), SL_BEGINNER );
+    pcbxSkill->addItem ( QIcon ( SLPixmap ), "Beginner", SL_BEGINNER );
 
     SLPixmap.fill ( QColor::fromRgb ( RGBCOL_R_SL_INTERMEDIATE,
                                       RGBCOL_G_SL_INTERMEDIATE,
                                       RGBCOL_B_SL_INTERMEDIATE ) );
 
-    pcbxSkill->addItem ( QIcon ( SLPixmap ), tr ( "Intermediate" ), SL_INTERMEDIATE );
+    pcbxSkill->addItem ( QIcon ( SLPixmap ), "Intermediate", SL_INTERMEDIATE );
 
     SLPixmap.fill ( QColor::fromRgb ( RGBCOL_R_SL_SL_PROFESSIONAL,
                                       RGBCOL_G_SL_SL_PROFESSIONAL,
                                       RGBCOL_B_SL_SL_PROFESSIONAL ) );
 
-    pcbxSkill->addItem ( QIcon ( SLPixmap ), tr ( "Expert" ), SL_PROFESSIONAL );
+    pcbxSkill->addItem ( QIcon ( SLPixmap ), "Expert", SL_PROFESSIONAL );
 
 
     // Add help text to controls -----------------------------------------------
     // fader tag
-    QString strFaderTag = "<b>" + tr ( "Musician Profile" ) + ":</b> " +
-         tr ( "Write your name or an alias here so the other musicians you want to "
-        "play with know who you are. You may also add a picture of the instrument "
-        "you play and a flag of the country you are located in. "
-        "Your city and skill level playing your instrument may also be added." ) +
-        "<br>" + tr ( "What you set here will appear at your fader on the mixer "
-        "board when you are connected to a Jamulus server. This tag will "
-        "also be shown at each client which is connected to the same server as "
-        "you." );
+    QString strFaderTag = tr ( "<b>Musician Profile:</b> Set your name "
+        "or an alias here so that the other musicians you want to play with "
+        "know who you are. Additionally you may set an instrument picture of "
+        "the instrument you play and a flag of the country you are living. "
+        "The city you live in and the skill level of playing your instrument "
+        "may also be added.\n"
+        "What you set here will appear at your fader on the mixer board when "
+        "you are connected to a " ) + APP_NAME + tr ( " server. This tag will "
+        "also show up at each client which is connected to the same server as "
+        "you. If the name is left empty, the IP address is shown instead." );
 
     pedtAlias->setWhatsThis ( strFaderTag );
     pedtAlias->setAccessibleName ( tr ( "Alias or name edit box" ) );
@@ -721,23 +694,23 @@ CMusProfDlg::CMusProfDlg ( CClient* pNCliP,
 
 
     // Connections -------------------------------------------------------------
-    QObject::connect ( pedtAlias, &QLineEdit::textChanged,
-        this, &CMusProfDlg::OnAliasTextChanged );
+    QObject::connect ( pedtAlias, SIGNAL ( textChanged ( const QString& ) ),
+        this, SLOT ( OnAliasTextChanged ( const QString& ) ) );
 
-    QObject::connect ( pcbxInstrument, static_cast<void (QComboBox::*) ( int )> ( &QComboBox::activated ),
-        this, &CMusProfDlg::OnInstrumentActivated );
+    QObject::connect ( pcbxInstrument, SIGNAL ( activated ( int ) ),
+        this, SLOT ( OnInstrumentActivated ( int ) ) );
 
-    QObject::connect ( pcbxCountry, static_cast<void (QComboBox::*) ( int )> ( &QComboBox::activated ),
-        this, &CMusProfDlg::OnCountryActivated );
+    QObject::connect ( pcbxCountry, SIGNAL ( activated ( int ) ),
+        this, SLOT ( OnCountryActivated ( int ) ) );
 
-    QObject::connect ( pedtCity, &QLineEdit::textChanged,
-        this, &CMusProfDlg::OnCityTextChanged );
+    QObject::connect ( pedtCity, SIGNAL ( textChanged ( const QString& ) ),
+        this, SLOT ( OnCityTextChanged ( const QString& ) ) );
 
-    QObject::connect ( pcbxSkill, static_cast<void (QComboBox::*) ( int )> ( &QComboBox::activated ),
-        this, &CMusProfDlg::OnSkillActivated );
+    QObject::connect ( pcbxSkill, SIGNAL ( activated ( int ) ),
+        this, SLOT ( OnSkillActivated ( int ) ) );
 
-    QObject::connect ( butClose, &QPushButton::clicked,
-        this, &CMusProfDlg::accept );
+    QObject::connect ( butClose, SIGNAL ( clicked() ),
+        this, SLOT ( accept() ) );
 }
 
 void CMusProfDlg::showEvent ( QShowEvent* )
@@ -833,25 +806,20 @@ void CMusProfDlg::OnSkillActivated ( int iCntryListItem )
 
 
 // Help menu -------------------------------------------------------------------
-CHelpMenu::CHelpMenu ( const bool bIsClient, QWidget* parent ) : QMenu ( tr ( "&Help" ), parent )
-{
-    // standard help menu consists of about and what's this help
-    if ( bIsClient )
-    {
-        addAction ( tr ( "Getting &Started..." ), this, SLOT ( OnHelpClientGetStarted() ) );
-        addAction ( tr ( "Software &Manual..." ), this, SLOT ( OnHelpSoftwareMan() ) );
-    }
-    else
-    {
-        addAction ( tr ( "Getting &Started..." ), this, SLOT ( OnHelpServerGetStarted() ) );
-    }
+ CHelpMenu::CHelpMenu ( QWidget* parent ) : QMenu ( "&?", parent )
+ {
+   // standard help menu consists of about and what's this help
+    addAction ( tr ( "What's &This" ), this,
+        SLOT ( OnHelpWhatsThis() ), QKeySequence ( Qt::SHIFT + Qt::Key_F1 ) );
+
     addSeparator();
-    addAction ( tr ( "What's &This" ), this, SLOT ( OnHelpWhatsThis() ), QKeySequence ( Qt::SHIFT + Qt::Key_F1 ) );
-    addSeparator();
-    addAction ( tr ( "&About..." ), this, SLOT ( OnHelpAbout() ) );
+    addAction ( tr ( "&Download Link..." ), this,
+        SLOT ( OnHelpDownloadLink() ) );
+
+   addSeparator();
+   addAction ( tr ( "&About..." ), this, SLOT ( OnHelpAbout() ) );
 }
 
-#endif
 
 /******************************************************************************\
 * Other Classes                                                                *
@@ -861,7 +829,7 @@ bool NetworkUtil::ParseNetworkAddress ( QString       strAddress,
                                         CHostAddress& HostAddress )
 {
     QHostAddress InetAddr;
-    quint16      iNetPort = DEFAULT_PORT_NUMBER;
+    quint16      iNetPort = LLCON_DEFAULT_PORT_NUMBER;
 
     // init requested host address with invalid address first
     HostAddress = CHostAddress();
@@ -947,12 +915,9 @@ QString NetworkUtil::GetCentralServerAddress ( const ECSAddType eCentralServerAd
 {
     switch ( eCentralServerAddressType )
     {
-    case AT_CUSTOM:               return strCentralServerAddress;
-    case AT_ALL_GENRES:           return CENTSERV_ALL_GENRES;
-    case AT_GENRE_ROCK:           return CENTSERV_GENRE_ROCK;
-    case AT_GENRE_JAZZ:           return CENTSERV_GENRE_JAZZ;
-    case AT_GENRE_CLASSICAL_FOLK: return CENTSERV_GENRE_CLASSICAL_FOLK;
-    default:                      return DEFAULT_SERVER_ADDRESS; // AT_DEFAULT
+    case AT_MANUAL:        return strCentralServerAddress;
+    case AT_NORTH_AMERICA: return QString ( "%1:%2" ).arg ( DEFAULT_SERVER_ADDRESS ).arg ( LLCON_PORT_NUMBER_NORTHAMERICA );
+    default:               return DEFAULT_SERVER_ADDRESS; // AT_DEFAULT
     }
 }
 
@@ -970,49 +935,35 @@ CVector<CInstPictures::CInstPictProps>& CInstPictures::GetTable()
         // instrument picture data base initialization
         // NOTE: Do not change the order of any instrument in the future!
         // NOTE: The very first entry is the "not used" element per definition.
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "None" ), ":/png/instr/res/instruments/none.png", IC_OTHER_INSTRUMENT ) ); // special first element
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Drum Set" ), ":/png/instr/res/instruments/drumset.png", IC_PERCUSSION_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Djembe" ), ":/png/instr/res/instruments/djembe.png", IC_PERCUSSION_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Electric Guitar" ), ":/png/instr/res/instruments/eguitar.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Acoustic Guitar" ), ":/png/instr/res/instruments/aguitar.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Bass Guitar" ), ":/png/instr/res/instruments/bassguitar.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Keyboard" ), ":/png/instr/res/instruments/keyboard.png", IC_KEYBOARD_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Synthesizer" ), ":/png/instr/res/instruments/synthesizer.png", IC_KEYBOARD_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Grand Piano" ), ":/png/instr/res/instruments/grandpiano.png", IC_KEYBOARD_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Accordion" ), ":/png/instr/res/instruments/accordeon.png", IC_KEYBOARD_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Vocal" ), ":/png/instr/res/instruments/vocal.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Microphone" ), ":/png/instr/res/instruments/microphone.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Harmonica" ), ":/png/instr/res/instruments/harmonica.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Trumpet" ), ":/png/instr/res/instruments/trumpet.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Trombone" ), ":/png/instr/res/instruments/trombone.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "French Horn" ), ":/png/instr/res/instruments/frenchhorn.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Tuba" ), ":/png/instr/res/instruments/tuba.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Saxophone" ), ":/png/instr/res/instruments/saxophone.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Clarinet" ), ":/png/instr/res/instruments/clarinet.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Flute" ), ":/png/instr/res/instruments/flute.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Violin" ), ":/png/instr/res/instruments/violin.png", IC_STRING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Cello" ), ":/png/instr/res/instruments/cello.png", IC_STRING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Double Bass" ), ":/png/instr/res/instruments/doublebass.png", IC_STRING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Recorder" ), ":/png/instr/res/instruments/recorder.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Streamer" ), ":/png/instr/res/instruments/streamer.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Listener" ), ":/png/instr/res/instruments/listener.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Guitar+Vocal" ), ":/png/instr/res/instruments/guitarvocal.png", IC_MULTIPLE_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Keyboard+Vocal" ), ":/png/instr/res/instruments/keyboardvocal.png", IC_MULTIPLE_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Bodhran" ), ":/png/instr/res/instruments/bodhran.png", IC_PERCUSSION_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Bassoon" ), ":/png/instr/res/instruments/bassoon.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Oboe" ), ":/png/instr/res/instruments/oboe.png", IC_WIND_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Harp" ), ":/png/instr/res/instruments/harp.png", IC_STRING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Viola" ), ":/png/instr/res/instruments/viola.png", IC_STRING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Congas" ), ":/png/instr/res/instruments/congas.png", IC_PERCUSSION_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Bongo" ), ":/png/instr/res/instruments/bongo.png", IC_PERCUSSION_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Vocal Bass" ), ":/png/instr/res/instruments/vocalbass.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Vocal Tenor" ), ":/png/instr/res/instruments/vocaltenor.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Vocal Alto" ), ":/png/instr/res/instruments/vocalalto.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Vocal Soprano" ), ":/png/instr/res/instruments/vocalsoprano.png", IC_OTHER_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Banjo" ), ":/png/instr/res/instruments/banjo.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Mandolin" ), ":/png/instr/res/instruments/mandolin.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Ukulele" ), ":/png/instr/res/instruments/ukulele.png", IC_PLUCKING_INSTRUMENT ) );
-        vecDataBase.Add ( CInstPictProps ( QCoreApplication::translate ( "CMusProfDlg", "Bass Ukulele" ), ":/png/instr/res/instruments/bassukulele.png", IC_PLUCKING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "None", ":/png/instr/res/instruments/instrnone.png", IC_OTHER_INSTRUMENT ) ); // special first element
+        vecDataBase.Add ( CInstPictProps ( "Drum Set", ":/png/instr/res/instruments/instrdrumset.png", IC_PERCUSSION_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Djembe", ":/png/instr/res/instruments/instrdjembe.png", IC_PERCUSSION_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Electric Guitar", ":/png/instr/res/instruments/instreguitar.png", IC_PLUCKING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Acoustic Guitar", ":/png/instr/res/instruments/instraguitar.png", IC_PLUCKING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Bass Guitar", ":/png/instr/res/instruments/instrbassguitar.png", IC_PLUCKING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Keyboard", ":/png/instr/res/instruments/instrkeyboard.png", IC_KEYBOARD_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Synthesizer", ":/png/instr/res/instruments/instrsynthesizer.png", IC_KEYBOARD_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Grand Piano", ":/png/instr/res/instruments/instrgrandpiano.png", IC_KEYBOARD_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Accordion", ":/png/instr/res/instruments/instraccordeon.png", IC_KEYBOARD_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Vocal", ":/png/instr/res/instruments/instrvocal.png", IC_OTHER_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Microphone", ":/png/instr/res/instruments/instrmicrophone.png", IC_OTHER_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Harmonica", ":/png/instr/res/instruments/instrharmonica.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Trumpet", ":/png/instr/res/instruments/instrtrumpet.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Trombone", ":/png/instr/res/instruments/instrtrombone.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "French Horn", ":/png/instr/res/instruments/instrfrenchhorn.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Tuba", ":/png/instr/res/instruments/instrtuba.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Saxophone", ":/png/instr/res/instruments/instrsaxophone.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Clarinet", ":/png/instr/res/instruments/instrclarinet.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Flute", ":/png/instr/res/instruments/instrflute.png", IC_WIND_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Violin", ":/png/instr/res/instruments/instrviolin.png", IC_STRING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Cello", ":/png/instr/res/instruments/instrcello.png", IC_STRING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Double Bass", ":/png/instr/res/instruments/instrdoublebass.png", IC_STRING_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Recorder", ":/png/instr/res/instruments/instrrecorder.png", IC_OTHER_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Streamer", ":/png/instr/res/instruments/instrstreamer.png", IC_OTHER_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Listener", ":/png/instr/res/instruments/instrlistener.png", IC_OTHER_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Guitar+Vocal", ":/png/instr/res/instruments/instrguitarvocal.png", IC_MULTIPLE_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Keyboard+Vocal", ":/png/instr/res/instruments/instrkeyboardvocal.png", IC_MULTIPLE_INSTRUMENT ) );
+        vecDataBase.Add ( CInstPictProps ( "Bodhran", ":/png/instr/res/instruments/bodhran.png", IC_PERCUSSION_INSTRUMENT ) );
 
         // now the table is initialized
         TableIsInitialized = true;
@@ -1336,7 +1287,7 @@ ECSAddType CLocale::GetCentralServerAddressType ( const QLocale::Country eCountr
     case QLocale::Canada:
     case QLocale::Mexico:
     case QLocale::Greenland:
-        return AT_ALL_GENRES;
+        return AT_NORTH_AMERICA;
 
     default:
         return AT_DEFAULT;
@@ -1393,40 +1344,4 @@ void DebugError ( const QString& pchErDescr,
     }
     printf ( "\nDebug error! For more information see test/DebugError.dat\n" );
     exit ( 1 );
-}
-
-QString GetVersionAndNameStr ( const bool bWithHtml )
-{
-    QString strVersionText = "";
-
-    // name, short description and GPL hint
-    if ( bWithHtml )
-    {
-        strVersionText += "<b>";
-    }
-    else
-    {
-        strVersionText += " *** ";
-    }
-
-    strVersionText += APP_NAME + QCoreApplication::tr ( ", Version " ) + VERSION;
-
-    if ( bWithHtml )
-    {
-        strVersionText += "</b><br>";
-    }
-    else
-    {
-        strVersionText += "\n *** ";
-    }
-
-    if ( !bWithHtml )
-    {
-        strVersionText += QCoreApplication::tr ( "Internet Jam Session Software" );
-        strVersionText += "\n *** ";
-    }
-
-    strVersionText += QCoreApplication::tr ( "Released under the GNU General Public License (GPL)" );
-
-    return strVersionText;
 }

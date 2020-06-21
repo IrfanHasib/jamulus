@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>CChatDlgBase</class>
- <widget class="QDialog" name="CChatDlgBase" >
-  <property name="geometry" >
+ <widget class="QDialog" name="CChatDlgBase">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,43 +10,40 @@
     <height>405</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Chat</string>
   </property>
-  <property name="windowIcon" >
-   <iconset resource="resources.qrc" >:/png/main/res/fronticon.png</iconset>
-  </property>
-  <property name="sizeGripEnabled" >
+  <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QVBoxLayout">
    <item>
-    <widget class="QTextBrowser" name="txvChatWindow" >
-     <property name="textInteractionFlags" >
-      <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::NoTextInteraction|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+    <widget class="QTextBrowser" name="txvChatWindow">
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="edtLocalInputText" />
+    <widget class="QLineEdit" name="edtLocalInputText"/>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
+    <layout class="QHBoxLayout">
      <item>
       <spacer>
-       <property name="orientation" >
+       <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="sizeType" >
+       <property name="sizeType">
         <enum>QSizePolicy::Expanding</enum>
        </property>
-       <property name="sizeHint" >
+       <property name="sizeHint" stdset="0">
         <size>
          <width>181</width>
          <height>27</height>
@@ -54,24 +52,24 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="butClear" >
-       <property name="text" >
+      <widget class="QPushButton" name="butClear">
+       <property name="text">
         <string>Cl&amp;ear</string>
        </property>
-       <property name="autoDefault" >
+       <property name="autoDefault">
         <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonClose" >
-       <property name="text" >
+      <widget class="QPushButton" name="buttonClose">
+       <property name="text">
         <string>&amp;Close</string>
        </property>
-       <property name="autoDefault" >
+       <property name="autoDefault">
         <bool>false</bool>
        </property>
-       <property name="default" >
+       <property name="default">
         <bool>false</bool>
        </property>
       </widget>
@@ -86,9 +84,7 @@
   <tabstop>butClear</tabstop>
   <tabstop>buttonClose</tabstop>
  </tabstops>
- <resources>
-  <include location="resources.qrc" />
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonClose</sender>
@@ -96,11 +92,11 @@
    <receiver>CChatDlgBase</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>20</x>
      <y>20</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>20</x>
      <y>20</y>
     </hint>

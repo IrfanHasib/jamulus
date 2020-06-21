@@ -18,32 +18,30 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
 #pragma once
 
-#include <QCoreApplication>
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <QHostInfo>
-#ifndef HEADLESS
-# include <QMenu>
-# include <QWhatsThis>
-# include <QTextBrowser>
-# include <QLabel>
-# include <QCheckBox>
-# include <QComboBox>
-# include <QLineEdit>
-# include <QDateTime>
-# include <QDesktopServices>
-# include "ui_aboutdlgbase.h"
-#endif
+#include <QMenu>
+#include <QWhatsThis>
+#include <QTextBrowser>
+#include <QLabel>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QDateTime>
 #include <QFile>
+#include <QDesktopServices>
 #include <QUrl>
 #include <QLocale>
-#include <QElapsedTimer>
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
+# include <QElapsedTimer>
+#endif
 #include <vector>
 #include <algorithm>
 #include "global.h"
@@ -60,6 +58,7 @@ using namespace std; // because of the library: "vector"
 #else
 # include <sys/time.h>
 #endif
+#include "ui_aboutdlgbase.h"
 
 
 class CClient;  // forward declaration of CClient
@@ -103,7 +102,6 @@ inline int CalcBitRateBitsPerSecFromCodedBytes ( const int iCeltNumCodedBytes,
     return ( SYSTEM_SAMPLE_RATE_HZ * iCeltNumCodedBytes * 8 ) / iFrameSize;
 }
 
-QString GetVersionAndNameStr ( const bool bWithHtml = true );
 
 
 /******************************************************************************\
@@ -216,7 +214,7 @@ template<class TData> int CVector<TData>::StringFiFoWithCompare ( const QString 
     CVector<QString> vstrTempList ( iVectorSize, "" );
 
     // init with illegal index per definition
-    int iOldIndex = INVALID_INDEX;
+    int iOldIndex = -1;
 
     // init temporary list count (may be overwritten later on)
     int iTempListCnt = 0;
@@ -412,7 +410,6 @@ template<class TData> void CMovingAv<TData>::Add ( const TData tNewD )
 /******************************************************************************\
 * GUI Utilities                                                                *
 \******************************************************************************/
-#ifndef HEADLESS
 // About dialog ----------------------------------------------------------------
 class CAboutDlg : public QDialog, private Ui_CAboutDlgBase
 {
@@ -421,6 +418,7 @@ class CAboutDlg : public QDialog, private Ui_CAboutDlgBase
 public:
     CAboutDlg ( QWidget* parent = nullptr );
 
+    static QString GetVersionAndNameStr ( const bool bWithHtml = true );
 };
 
 
@@ -475,20 +473,18 @@ class CHelpMenu : public QMenu
     Q_OBJECT
 
 public:
-    CHelpMenu ( const bool bIsClient, QWidget* parent = nullptr );
+    CHelpMenu ( QWidget* parent = nullptr );
 
 protected:
     CAboutDlg AboutDlg;
 
 public slots:
-    void OnHelpWhatsThis()        { QWhatsThis::enterWhatsThisMode(); }
-    void OnHelpAbout()            { AboutDlg.exec(); }
-    void OnHelpClientGetStarted() { QDesktopServices::openUrl ( QUrl ( CLIENT_GETTING_STARTED_URL ) ); }
-    void OnHelpServerGetStarted() { QDesktopServices::openUrl ( QUrl ( SERVER_GETTING_STARTED_URL ) ); }
-    void OnHelpSoftwareMan()      { QDesktopServices::openUrl ( QUrl ( SOFTWARE_MANUAL_URL ) ); }
+    void OnHelpWhatsThis() { QWhatsThis::enterWhatsThisMode(); }
+    void OnHelpAbout() { AboutDlg.exec(); }
+    void OnHelpDownloadLink()
+        { QDesktopServices::openUrl ( QUrl ( SOFTWARE_DOWNLOAD_URL ) ); }
 };
 
-#endif
 
 // Console writer factory ------------------------------------------------------
 // this class was written by pljones
@@ -506,10 +502,12 @@ private:
 /******************************************************************************\
 * Other Classes/Enums                                                          *
 \******************************************************************************/
+
+
 // Audio channel configuration -------------------------------------------------
 enum EAudChanConf
 {
-    // used for settings -> enum values should be fixed
+    // used for settings -> enum values must be fixed!
     CC_MONO = 0,
     CC_MONO_IN_STEREO_OUT = 1,
     CC_STEREO = 2
@@ -550,10 +548,9 @@ enum EGetDataStat
 // GUI design enum -------------------------------------------------------------
 enum EGUIDesign
 {
-    // used for settings -> enum values should be fixed
+    // used for settings -> enum values must be fixed!
     GD_STANDARD = 0,
-    GD_ORIGINAL = 1,
-    GD_SLIMFADER = 2
+    GD_ORIGINAL = 1
 };
 
 
@@ -566,59 +563,13 @@ enum ELicenceType
 };
 
 
-// Server jam recorder state enum ----------------------------------------------
-enum ERecorderState
-{
-    RS_UNDEFINED = 0,
-    RS_NOT_INITIALISED = 1,
-    RS_NOT_ENABLED = 2,
-    RS_RECORDING = 3
-};
-
-
-// Channel sort type -----------------------------------------------------------
-enum EChSortType
-{
-    ST_BY_NAME = 0,
-    ST_BY_INSTRUMENT = 1
-};
-
-
 // Central server address type -------------------------------------------------
 enum ECSAddType
 {
-    // used for settings -> enum values should be fixed
-    AT_DEFAULT = 0,
-    AT_ALL_GENRES = 1,
-    AT_GENRE_ROCK = 2,
-    AT_GENRE_JAZZ = 3,
-    AT_GENRE_CLASSICAL_FOLK = 4,
-    AT_CUSTOM = 5 // Must be the last entry!
+    AT_MANUAL = 0,
+    AT_DEFAULT = 1, // Europe and others
+    AT_NORTH_AMERICA = 2
 };
-
-inline QString csCentServAddrTypeToString ( ECSAddType eAddrType )
-{
-    switch ( eAddrType )
-    {
-    case AT_CUSTOM:
-        return QCoreApplication::translate ( "CClientSettingsDlg", "Custom" );
-
-    case AT_ALL_GENRES:
-        return QCoreApplication::translate ( "CClientSettingsDlg", "All Genres" );
-
-    case AT_GENRE_ROCK:
-        return QCoreApplication::translate ( "CClientSettingsDlg", "Genre Rock" );
-
-    case AT_GENRE_JAZZ:
-        return QCoreApplication::translate ( "CClientSettingsDlg", "Genre Jazz" );
-
-    case AT_GENRE_CLASSICAL_FOLK:
-        return QCoreApplication::translate ( "CClientSettingsDlg", "Genre Classical/Folk/Choir" );
-
-    default: // AT_DEFAULT
-        return QCoreApplication::translate ( "CClientSettingsDlg", "Default" );
-    }
-}
 
 
 // Slave server registration state ---------------------------------------------
@@ -638,28 +589,28 @@ inline QString svrRegStatusToString ( ESvrRegStatus eSvrRegStatus )
     switch ( eSvrRegStatus )
     {
     case SRS_UNREGISTERED:
-        return QCoreApplication::translate ( "CServerDlg", "Unregistered" );
+        return "Unregistered";
 
     case SRS_BAD_ADDRESS:
-        return QCoreApplication::translate ( "CServerDlg", "Bad address" );
+        return "Bad address";
 
     case SRS_REQUESTED:
-        return QCoreApplication::translate ( "CServerDlg", "Registration requested" );
+        return "Registration requested";
 
     case SRS_TIME_OUT:
-        return QCoreApplication::translate ( "CServerDlg", "Registration failed" );
+        return "Registration failed";
 
     case SRS_UNKNOWN_RESP:
-        return QCoreApplication::translate ( "CServerDlg", "Check server version" );
+        return "Check server version";
 
     case SRS_REGISTERED:
-        return QCoreApplication::translate ( "CServerDlg", "Registered" );
+        return "Registered";
 
     case SRS_CENTRAL_SVR_FULL:
-        return QCoreApplication::translate ( "CServerDlg", "Central Server full" );
+        return "Central Server full";
     }
 
-    return QString ( QCoreApplication::translate ( "CServerDlg", "Unknown value " ) ).append ( eSvrRegStatus );
+    return QString ( "Unknown value " ).append ( eSvrRegStatus );
 }
 
 
@@ -706,7 +657,7 @@ public:
     void          Update ( const CVector<short>& vecsAudio );
     double        MicLeveldBLeft()  { return CalcLogResult ( dCurLevelL ); }
     double        MicLeveldBRight() { return CalcLogResult ( dCurLevelR ); }
-    static double CalcLogResult ( const double& dLinearLevel );
+    static double CalcLogResult  ( const double& dLinearLevel );
 
     void Reset()
     {
@@ -715,8 +666,8 @@ public:
     }
 
 protected:
-    double UpdateCurLevel ( double       dCurLevel,
-                            const short& sMax );
+    double UpdateCurLevel ( double        dCurLevel,
+                            const short&  sMax );
 
     double dCurLevelL;
     double dCurLevelR;
@@ -858,11 +809,11 @@ class CChannelCoreInfo
 {
 public:
     CChannelCoreInfo() :
-        strName     ( "" ),
-        eCountry    ( QLocale::AnyCountry ),
-        strCity     ( "" ),
-        iInstrument ( CInstPictures::GetNotUsedInstrument() ),
-        eSkillLevel ( SL_NOT_SET ) {}
+        strName         ( "" ),
+        eCountry        ( QLocale::AnyCountry ),
+        strCity         ( "" ),
+        iInstrument     ( CInstPictures::GetNotUsedInstrument() ),
+        eSkillLevel     ( SL_NOT_SET ) {}
 
     CChannelCoreInfo ( const QString           NsName,
                        const QLocale::Country& NeCountry,
@@ -938,6 +889,25 @@ public:
                            NeSkillLevel ),
         iChanID ( NiID ),
         iIpAddr ( NiIP ) {}
+
+    QString GenNameForDisplay() const
+    {
+        // if text is empty, show IP address instead
+        if ( strName.isEmpty() )
+        {
+            // convert IP address to text and show it (use dummy port number
+            // since it is not used here)
+            const CHostAddress TempAddr =
+                CHostAddress ( QHostAddress ( iIpAddr ), 0 );
+
+            return TempAddr.toString ( CHostAddress::SM_IP_NO_LAST_BYTE );
+        }
+        else
+        {
+            // show name of channel
+            return strName;
+        }
+    }
 
     // ID of the channel
     int     iChanID;
@@ -1119,15 +1089,11 @@ class CAudioReverb
 public:
     CAudioReverb() {}
     
-    void Init ( const EAudChanConf eNAudioChannelConf,
-                const int          iNStereoBlockSizeSam,
-                const int          iSampleRate,
-                const double       rT60 = 1.1 );
-
+    void Init ( const int iSampleRate, const double rT60 = 1.1 );
     void Clear();
-    void Process ( CVector<int16_t>& vecsStereoInOut,
-                   const bool        bReverbOnLeftChan,
-                   const double      dAttenuation );
+    void ProcessSample ( int16_t&     iInputOutputLeft,
+                         int16_t&     iInputOutputRight,
+                         const double dAttenuation );
 
 protected:
     void setT60 ( const double rT60, const int iSampleRate );
@@ -1147,8 +1113,6 @@ protected:
         double dLastSample;
     };
 
-    EAudChanConf  eAudioChannelConf;
-    int           iStereoBlockSizeSam;
     CFIFO<double> allpassDelays[3];
     CFIFO<double> combDelays[4];
     COnePole      combFilters[4];
@@ -1195,11 +1159,13 @@ public:
         // different IIR weights for up and down direction
         if ( dNewValue < dOldValue )
         {
-            dOldValue = dOldValue * dWeightDown + ( 1.0 - dWeightDown ) * dNewValue;
+            dOldValue =
+                dOldValue * dWeightDown + ( 1.0 - dWeightDown ) * dNewValue;
         }
         else
         {
-            dOldValue = dOldValue * dWeightUp + ( 1.0 - dWeightUp ) * dNewValue;
+            dOldValue =
+                dOldValue * dWeightUp + ( 1.0 - dWeightUp ) * dNewValue;
         }
     }
 
@@ -1216,17 +1182,6 @@ public:
         {
             return round ( dValue + dHysteresis );
         }
-    }
-
-    // calculate pan gains: in cross fade mode the pan center is attenuated
-    // by 6 dB, otherwise the center equals full gain for both channels
-    static inline double GetLeftPan ( const double dPan, const bool bXFade)
-    {
-        return bXFade ? 1 - dPan : std::min ( 0.5, 1 - dPan ) * 2;
-    }
-    static inline double GetRightPan ( const double dPan, const bool bXFade)
-    {
-        return bXFade ? dPan : std::min ( 0.5, dPan ) * 2;
     }
 };
 
@@ -1261,17 +1216,18 @@ public:
 
 // Timing measurement ----------------------------------------------------------
 // intended for debugging the timing jitter of the sound card or server timer
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
 class CTimingMeas
 {
 public:
     CTimingMeas ( const int iNNMeas, const QString strNFName = "" ) :
         iNumMeas ( iNNMeas ), vElapsedTimes ( iNNMeas ), strFileName ( strNFName ) { Reset(); }
 
-    void Reset() { iCnt = INVALID_INDEX; }
+    void Reset() { iCnt = -1; }
     void Measure()
     {
         // exclude the very first measurement (initialization phase)
-        if ( iCnt == INVALID_INDEX )
+        if ( iCnt == -1 )
         {
             iCnt = 0;
         }
@@ -1312,6 +1268,7 @@ protected:
     QElapsedTimer ElapsedTimer;
     int           iCnt;
 };
+#endif
 
 
 /******************************************************************************\

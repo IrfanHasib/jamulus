@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -34,6 +34,13 @@
 #include "global.h"
 
 
+/* Definitions ****************************************************************/
+// defines for LED level meter CMultiColorLEDBar
+#define NUM_STEPS_LED_BAR                8
+#define RED_BOUND_LED_BAR                7
+#define YELLOW_BOUND_LED_BAR             5
+
+
 /* Classes ********************************************************************/
 class CMultiColorLEDBar : public QWidget
 {
@@ -43,8 +50,7 @@ public:
     enum ELevelMeterType
     {
         MT_LED,
-        MT_BAR,
-        MT_SLIM_BAR
+        MT_BAR
     };
 
     CMultiColorLEDBar ( QWidget* parent = nullptr, Qt::WindowFlags f = nullptr );
@@ -60,7 +66,7 @@ protected:
         enum ELightColor
         {
             RL_DISABLED,
-            RL_BLACK,
+            RL_GREY,
             RL_GREEN,
             RL_YELLOW,
             RL_RED
@@ -71,7 +77,8 @@ protected:
         QLabel* getLabelPointer() { return pLEDLabel; }
 
     protected:
-        QPixmap     BitmCubeRoundBlack;
+        QPixmap     BitmCubeRoundDisabled;
+        QPixmap     BitmCubeRoundGrey;
         QPixmap     BitmCubeRoundGreen;
         QPixmap     BitmCubeRoundYellow;
         QPixmap     BitmCubeRoundRed;

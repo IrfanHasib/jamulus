@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -58,28 +58,27 @@ public:
 
 protected:
     virtual void changeEvent ( QEvent* pEvent );
-    virtual void closeEvent ( QCloseEvent* Event );
+    virtual void closeEvent  ( QCloseEvent* Event );
 
     void         UpdateGUIDependencies();
     void         UpdateSystemTrayIcon ( const bool bIsActive );
     void         ShowWindowInForeground() { showNormal(); raise(); }
     void         ModifyAutoStartEntry ( const bool bDoAutoStart );
-    void         UpdateRecorderStatus( QString sessionDir );
 
-    QTimer                    Timer;
-    CServer*                  pServer;
-    CSettings*                pSettings;
+    QTimer                        Timer;
+    CServer*                      pServer;
+    CSettings*                    pSettings;
 
-    CVector<QTreeWidgetItem*> vecpListViewItems;
-    QMutex                    ListViewMutex;
+    CVector<QTreeWidgetItem*>     vecpListViewItems;
+    QMutex                        ListViewMutex;
 
-    QMenuBar*                 pMenu;
+    QMenuBar*                     pMenu;
 
-    bool                      bSystemTrayIconAvaialbe;
-    QSystemTrayIcon           SystemTrayIcon;
-    QPixmap                   BitmapSystemTrayInactive;
-    QPixmap                   BitmapSystemTrayActive;
-    QMenu*                    pSystemTrayIconMenu;
+    bool                          bSystemTrayIconAvaialbe;
+    QSystemTrayIcon               SystemTrayIcon;
+    QPixmap                       BitmapSystemTrayInactive;
+    QPixmap                       BitmapSystemTrayActive;
+    QMenu*                        pSystemTrayIconMenu;
 
 public slots:
     void OnAboutToQuit() { pSettings->Save(); }
@@ -87,19 +86,15 @@ public slots:
     void OnRegisterServerStateChanged ( int value );
     void OnStartOnOSStartStateChanged ( int value );
     void OnUseCCLicenceStateChanged ( int value );
-    void OnEnableRecorderStateChanged ( int value )
-        { pServer->SetEnableRecording ( Qt::CheckState::Checked == value ); }
-
     void OnCentralServerAddressEditingFinished();
     void OnServerNameTextChanged ( const QString& strNewName );
     void OnLocationCityTextChanged ( const QString& strNewCity );
     void OnLocationCountryActivated ( int iCntryListItem );
     void OnCentServAddrTypeActivated ( int iTypeIdx );
     void OnTimer();
-    void OnServerStarted();
-    void OnServerStopped();
+    void OnServerStarted() { UpdateSystemTrayIcon ( true ); }
+    void OnServerStopped() { UpdateSystemTrayIcon ( false ); }
     void OnSvrRegStatusChanged() { UpdateGUIDependencies(); }
-    void OnStopRecorder();
     void OnSysTrayMenuOpen() { ShowWindowInForeground(); }
     void OnSysTrayMenuHide() { hide(); }
     void OnSysTrayMenuExit() { close(); }
@@ -107,8 +102,4 @@ public slots:
 
     void keyPressEvent ( QKeyEvent *e ) // block escape key
         { if ( e->key() != Qt::Key_Escape ) QDialog::keyPressEvent ( e ); }
-
-    void OnNewRecordingClicked() { pServer->RequestNewRecording(); }
-    void OnRecordingSessionStarted ( QString sessionDir )
-        { UpdateRecorderStatus ( sessionDir ); }
 };

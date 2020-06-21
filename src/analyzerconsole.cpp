@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -45,8 +45,8 @@ CAnalyzerConsole::CAnalyzerConsole ( CClient* pNCliP,
     LineMaxUpLimitColor    ( Qt::red )
 {
     // set the window icon and title text
-    const QIcon icon = QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) );
-    setWindowIcon ( icon );
+    //const QIcon icon = QIcon ( QString::fromUtf8 ( ":/png/main/res/fronticon.png" ) );
+    //setWindowIcon ( icon );
     setWindowTitle ( tr ( "Analyzer Console" ) );
 
     // create main layout
@@ -71,8 +71,8 @@ CAnalyzerConsole::CAnalyzerConsole ( CClient* pNCliP,
 
     // Connections -------------------------------------------------------------
     // timers
-    QObject::connect ( &TimerErrRateUpdate, &QTimer::timeout,
-        this, &CAnalyzerConsole::OnTimerErrRateUpdate );
+    QObject::connect ( &TimerErrRateUpdate, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerErrRateUpdate() ) );
 }
 
 void CAnalyzerConsole::showEvent ( QShowEvent* )

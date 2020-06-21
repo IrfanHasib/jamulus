@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -26,9 +26,7 @@
 
 #include <QThread>
 #include <QString>
-#ifndef HEADLESS
-# include <QMessageBox>
-#endif
+#include <QMessageBox>
 #include "global.h"
 #include "util.h"
 
@@ -53,7 +51,8 @@ public:
                  const bool     bNewIsCallbackAudioInterface,
                  void           (*fpNewProcessCallback) ( CVector<int16_t>& psData, void* pParg ),
                  void*          pParg,
-                 const int      iNewCtrlMIDIChannel );
+                 const int      iNewCtrlMIDIChannel);
+                // const bool     bNewNoAutoJackConnect );
 
     virtual int  Init ( const int iNewPrefMonoBufferSize );
     virtual void Start();
@@ -143,6 +142,7 @@ protected:
     bool             bIsCallbackAudioInterface;
     QString          strSystemDriverTechniqueName;
     int              iCtrlMIDIChannel;
+    bool             bNoAutoJackConnect;
 
     CVector<int16_t> vecsAudioSndCrdStereo;
 

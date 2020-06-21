@@ -6,16 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
-    <height>394</height>
+    <width>600</width>
+    <height>434</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/png/main/res/fronticon.png</normaloff>:/png/main/res/fronticon.png</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -508,13 +504,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLabel" name="lblSkin">
-            <property name="text">
-             <string>Skin</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
@@ -539,26 +528,41 @@
             </item>
            </layout>
           </item>
-          <item>
-           <widget class="QComboBox" name="cbxSkin"/>
-          </item>
          </layout>
         </item>
        </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="chbDisplayChannelLevels">
-        <property name="text">
-         <string>Display Channel Levels</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QCheckBox" name="chbGUIDesignFancy">
+          <property name="text">
+           <string>Fancy Skin</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chbDisplayChannelLevels">
+          <property name="text">
+           <string>Display Channel Levels</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QLabel" name="lblCentralServerAddress">
-        <property name="text">
-         <string>Custom Central Server Address:</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="lblCentralServerAddress">
+          <property name="text">
+           <string>Central Server Address:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbxCentServAddrType"/>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QLineEdit" name="edtCentralServerAddress">
@@ -725,12 +729,11 @@
   <tabstop>cbxAudioChannels</tabstop>
   <tabstop>cbxAudioQuality</tabstop>
   <tabstop>edtNewClientLevel</tabstop>
-  <tabstop>cbxSkin</tabstop>
+  <tabstop>chbGUIDesignFancy</tabstop>
   <tabstop>chbDisplayChannelLevels</tabstop>
+  <tabstop>cbxCentServAddrType</tabstop>
   <tabstop>edtCentralServerAddress</tabstop>
  </tabstops>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

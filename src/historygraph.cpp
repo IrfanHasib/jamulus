@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -299,7 +299,6 @@ void AHistoryGraph::AddMarker ( const SHistoryData& curHistoryData )
 
 
 /* JPEG History Graph implementation ******************************************/
-#ifndef HEADLESS
 CJpegHistoryGraph::CJpegHistoryGraph ( const int iMaxDaysHistory ) :
     AHistoryGraph   ( iMaxDaysHistory ),
     PlotPixmap      ( 1, 1, QImage::Format_RGB32 ),
@@ -351,8 +350,8 @@ CJpegHistoryGraph::CJpegHistoryGraph ( const int iMaxDaysHistory ) :
 
 
     // Connections -------------------------------------------------------------
-    QObject::connect ( &TimerDailyUpdate, &QTimer::timeout,
-        this, &CJpegHistoryGraph::OnTimerDailyUpdate );
+    QObject::connect ( &TimerDailyUpdate, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerDailyUpdate() ) );
 }
 
 // Override Update to blank out the plot area each time
@@ -402,7 +401,6 @@ void CJpegHistoryGraph::point ( const unsigned int x, const unsigned int y, cons
     PlotPainter.setPen ( QPen ( QBrush( QColor ( colour ) ), size ) );
     PlotPainter.drawPoint ( x, y );
 }
-#endif
 
 
 /* SVG History Graph implementation *******************************************/
@@ -428,8 +426,8 @@ CSvgHistoryGraph::CSvgHistoryGraph ( const int iMaxDaysHistory ) :
 
 
     // Connections -------------------------------------------------------------
-    QObject::connect ( &TimerDailyUpdate, &QTimer::timeout,
-        this, &CSvgHistoryGraph::OnTimerDailyUpdate );
+    QObject::connect ( &TimerDailyUpdate, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerDailyUpdate() ) );
 }
 
 // Override Update to create the fresh SVG stream each time

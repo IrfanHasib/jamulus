@@ -7,15 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>588</width>
-    <height>419</height>
+    <height>415</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string/>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/png/main/res/fronticon.png</normaloff>:/png/main/res/fronticon.png</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -69,27 +65,6 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Genre</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="cbxCentServAddrType"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblRegSvrStatus">
-       <property name="text">
-        <string>STATUS</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <spacer>
        <property name="orientation">
@@ -106,6 +81,13 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QLabel" name="lblRegSvrStatus">
+       <property name="text">
+        <string>STATUS</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -113,12 +95,15 @@
      <item>
       <widget class="QLabel" name="lblCentralServerAddress">
        <property name="text">
-        <string>Custom Central Server Address:</string>
+        <string>Central Server Address:</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLineEdit" name="edtCentralServerAddress"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cbxCentServAddrType"/>
      </item>
     </layout>
    </item>
@@ -168,56 +153,6 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout">
-     <item>
-      <widget class="QCheckBox" name="chbEnableRecorder">
-       <property name="text">
-        <string>Enable jam recorder</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="edtCurrentSessionDir">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblRecorderStatus">
-       <property name="text">
-        <string>STATUS</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pbtNewRecording">
-       <property name="text">
-        <string>New recording</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout">
-     <item>
-      <widget class="QPushButton" name="pbtRecordingDir">
-       <property name="text">
-        <string>Recordings folder</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="edtRecordingsDir">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout">
@@ -271,19 +206,12 @@
   <tabstop>chbStartOnOSStart</tabstop>
   <tabstop>chbUseCCLicence</tabstop>
   <tabstop>chbRegisterServer</tabstop>
-  <tabstop>cbxCentServAddrType</tabstop>
   <tabstop>edtCentralServerAddress</tabstop>
+  <tabstop>cbxCentServAddrType</tabstop>
   <tabstop>edtServerName</tabstop>
   <tabstop>edtLocationCity</tabstop>
   <tabstop>cbxLocationCountry</tabstop>
-  <tabstop>chbEnableRecorder</tabstop>
-  <tabstop>edtCurrentSessionDir</tabstop>
-  <tabstop>pbtNewRecording</tabstop>
-  <tabstop>pbtRecordingDir</tabstop>
-  <tabstop>edtRecordingsDir</tabstop>
  </tabstops>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

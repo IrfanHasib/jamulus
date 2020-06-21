@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -31,9 +31,8 @@ CServerListManager::CServerListManager ( const quint16  iNPortNum,
                                          const int      iNumChannels,
                                          const bool     bNCentServPingServerInList,
                                          CProtocol*     pNConLProt )
-    : tsConsoleStream           ( *( ( new ConsoleWriterFactory() )->get() ) ),
-      iNumPredefinedServers     ( 0 ),
-      eCentralServerAddressType ( AT_CUSTOM ), // must be AT_CUSTOM for the "no GUI" case
+    : iNumPredefinedServers     ( 0 ),
+      eCentralServerAddressType ( AT_MANUAL ), // must be AT_MANUAL for the "no GUI" case
       bCentServPingServerInList ( bNCentServPingServerInList ),
       pConnLessProtocol         ( pNConLProt ),
       eSvrRegStatus             ( SRS_UNREGISTERED ),
@@ -173,20 +172,20 @@ CServerListManager::CServerListManager ( const quint16  iNPortNum,
 
 
     // Connections -------------------------------------------------------------
-    QObject::connect ( &TimerPollList, &QTimer::timeout,
-        this, &CServerListManager::OnTimerPollList );
+    QObject::connect ( &TimerPollList, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerPollList() ) );
 
-    QObject::connect ( &TimerPingServerInList, &QTimer::timeout,
-        this, &CServerListManager::OnTimerPingServerInList );
+    QObject::connect ( &TimerPingServerInList, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerPingServerInList() ) );
 
-    QObject::connect ( &TimerPingCentralServer, &QTimer::timeout,
-        this, &CServerListManager::OnTimerPingCentralServer );
+    QObject::connect ( &TimerPingCentralServer, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerPingCentralServer() ) );
 
-    QObject::connect ( &TimerRegistering, &QTimer::timeout,
-        this, &CServerListManager::OnTimerRegistering );
+    QObject::connect ( &TimerRegistering, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerRegistering() ) );
 
-    QObject::connect ( &TimerCLRegisterServerResp, &QTimer::timeout,
-        this, &CServerListManager::OnTimerCLRegisterServerResp );
+    QObject::connect ( &TimerCLRegisterServerResp, SIGNAL ( timeout() ),
+        this, SLOT ( OnTimerCLRegisterServerResp() ) );
 }
 
 void CServerListManager::SetCentralServerAddress ( const QString sNCentServAddr )
@@ -206,7 +205,7 @@ void CServerListManager::SetCentralServerAddress ( const QString sNCentServAddr 
             (
               ( !strCentralServerAddress.toLower().compare ( "localhost" ) ||
                 !strCentralServerAddress.compare ( "127.0.0.1" ) ) &&
-              ( eCentralServerAddressType == AT_CUSTOM )
+              ( eCentralServerAddressType == AT_MANUAL )
             );
 
         bEnabled = true;
@@ -308,8 +307,6 @@ void CServerListManager::OnTimerPingServerInList()
 
 void CServerListManager::OnTimerPollList()
 {
-    CVector<CHostAddress> vecRemovedHostAddr;
-
     QMutexLocker locker ( &Mutex );
 
     // Check all list entries except of the very first one (which is the central
@@ -322,7 +319,6 @@ void CServerListManager::OnTimerPollList()
         if ( ServerList[iIdx].RegisterTime.elapsed() > ( SERVLIST_TIME_OUT_MINUTES * 60000 ) )
         {
             // remove this list entry
-            vecRemovedHostAddr.Add ( ServerList[iIdx].HostAddr );
             ServerList.removeAt ( iIdx );
         }
         else
@@ -331,33 +327,25 @@ void CServerListManager::OnTimerPollList()
             iIdx++;
         }
     }
-
-    locker.unlock();
-
-    foreach ( const CHostAddress HostAddr, vecRemovedHostAddr )
-    {
-        tsConsoleStream << "Expired entry for " << HostAddr.toString() << endl;
-    }
 }
 
 void CServerListManager::CentralServerRegisterServer ( const CHostAddress&    InetAddr,
                                                        const CHostAddress&    LInetAddr,
                                                        const CServerCoreInfo& ServerInfo )
 {
+    QMutexLocker locker ( &Mutex );
+
     if ( bIsCentralServer && bEnabled )
     {
-        tsConsoleStream << "Requested to register entry for "
-                        << InetAddr.toString() << " (" << LInetAddr.toString() << ")"
-                        << ": " << ServerInfo.strName << endl;
-
-        QMutexLocker locker ( &Mutex );
-
         const int iCurServerListSize = ServerList.size();
+        
+        // define invalid index used as a flag
+        const int ciInvalidIdx = -1;
 
         // Check if server is already registered.
         // The very first list entry must not be checked since
         // this is per definition the central server (i.e., this server)
-        int iSelIdx = INVALID_INDEX; // initialize with an illegal value
+        int iSelIdx = ciInvalidIdx; // initialize with an illegal value
         for ( int iIdx = 1; iIdx < iCurServerListSize; iIdx++ )
         {
             if ( ServerList[iIdx].HostAddr == InetAddr )
@@ -371,7 +359,7 @@ void CServerListManager::CentralServerRegisterServer ( const CHostAddress&    In
         }
 
         // if server is not yet registered, we have to create a new entry
-        if ( iSelIdx == INVALID_INDEX )
+        if ( iSelIdx == ciInvalidIdx )
         {
             // check for maximum allowed number of servers in the server list
             if ( iCurServerListSize < MAX_NUM_SERVERS_IN_SERVER_LIST )
@@ -398,7 +386,7 @@ void CServerListManager::CentralServerRegisterServer ( const CHostAddress&    In
             }
         }
 
-        pConnLessProtocol->CreateCLRegisterServerResp ( InetAddr, iSelIdx == INVALID_INDEX
+        pConnLessProtocol->CreateCLRegisterServerResp ( InetAddr, iSelIdx == ciInvalidIdx
                                                             ? ESvrRegResult::SRR_CENTRAL_SVR_FULL
                                                             : ESvrRegResult::SRR_REGISTERED );
     }
@@ -406,13 +394,10 @@ void CServerListManager::CentralServerRegisterServer ( const CHostAddress&    In
 
 void CServerListManager::CentralServerUnregisterServer ( const CHostAddress& InetAddr )
 {
+    QMutexLocker locker ( &Mutex );
+
     if ( bIsCentralServer && bEnabled )
     {
-        tsConsoleStream << "Requested to unregister entry for "
-                        << InetAddr.toString() << endl;
-
-        QMutexLocker locker ( &Mutex );
-
         const int iCurServerListSize = ServerList.size();
 
         // Find the server to unregister in the list. The very first list entry
@@ -602,6 +587,7 @@ void CServerListManager::SlaveServerRegisterServer ( const bool bIsRegister )
 void CServerListManager::SetSvrRegStatus ( ESvrRegStatus eNSvrRegStatus )
 {
     // output regirstation result/update on the console
+    QTextStream& tsConsoleStream = *( ( new ConsoleWriterFactory() )->get() );
     tsConsoleStream << "Server Registration Status update: " << svrRegStatusToString ( eNSvrRegStatus ) << endl;
 
     // store the state and inform the GUI about the new status

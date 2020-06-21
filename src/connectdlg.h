@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -47,9 +47,8 @@ class CConnectDlg : public QDialog, private Ui_CConnectDlgBase
     Q_OBJECT
 
 public:
-    CConnectDlg ( CClient*        pNCliP,
-                  const bool      bNewShowCompleteRegList,
-                  QWidget*        parent = nullptr,
+    CConnectDlg ( const bool bNewShowCompleteRegList,
+                  QWidget* parent = nullptr,
                   Qt::WindowFlags f = nullptr );
 
     void Init ( const CVector<QString>& vstrIPAddresses );
@@ -79,6 +78,8 @@ public:
     QString GetSelectedServerName() const { return strSelectedServerName; }
     void    RequestServerList();
 
+    QString GetPassword () { return strPassword; }
+
 protected:
     virtual void showEvent ( QShowEvent* );
     virtual void hideEvent ( QHideEvent* );
@@ -89,13 +90,12 @@ protected:
     void             UpdateListFilter();
     void             ShowAllMusicians ( const bool bState );
 
-    CClient*     pClient;
-
     QTimer       TimerPing;
     QTimer       TimerReRequestServList;
     QString      strCentralServerAddress;
     CHostAddress CentralServerAddress;
     QString      strSelectedAddress;
+    QString      strPassword;
     QString      strSelectedServerName;
     bool         bShowCompleteRegList;
     bool         bServerListReceived;
@@ -107,7 +107,6 @@ public slots:
     void OnServerListItemSelectionChanged();
     void OnServerListItemDoubleClicked ( QTreeWidgetItem* Item, int );
     void OnServerAddrEditTextChanged ( const QString& );
-    void OnCentServAddrTypeChanged ( int iTypeIdx ) { pClient->SetCentralServerAddressType ( static_cast<ECSAddType> ( iTypeIdx ) ); }
     void OnFilterTextEdited ( const QString& ) { UpdateListFilter(); }
     void OnExpandAllStateChanged ( int value ) { ShowAllMusicians ( value == Qt::Checked ); }
     void OnConnectClicked();

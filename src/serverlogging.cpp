@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -47,15 +47,13 @@ void CServerLogging::Start ( const QString& strLoggingFileName )
 
 void CServerLogging::EnableHistory ( const QString& strHistoryFileName )
 {
-#ifndef HEADLESS
-    if ( strHistoryFileName.right ( 4 ).compare ( ".svg", Qt::CaseInsensitive ) != 0 )
-    {
-        JpegHistoryGraph.Start ( strHistoryFileName );
-    }
-    else
-#endif
+    if ( strHistoryFileName.right ( 4 ).compare ( ".svg", Qt::CaseInsensitive ) == 0 )
     {
         SvgHistoryGraph.Start ( strHistoryFileName );
+    }
+    else
+    {
+        JpegHistoryGraph.Start ( strHistoryFileName );
     }
 }
 
@@ -70,9 +68,7 @@ void CServerLogging::AddNewConnection ( const QHostAddress& ClientInetAddr )
     *this << strLogStr; // in log file
 
     // add element to history
-#ifndef HEADLESS
     JpegHistoryGraph.Add ( QDateTime::currentDateTime(), ClientInetAddr );
-#endif
     SvgHistoryGraph.Add ( QDateTime::currentDateTime(), ClientInetAddr );
 }
 
@@ -86,14 +82,10 @@ void CServerLogging::AddServerStopped()
     *this << strLogStr; // in log file
 
     // add element to history and update on server stop
-#ifndef HEADLESS
     JpegHistoryGraph.Add ( QDateTime::currentDateTime(), AHistoryGraph::HIT_SERVER_STOP );
-#endif
     SvgHistoryGraph.Add ( QDateTime::currentDateTime(), AHistoryGraph::HIT_SERVER_STOP );
 
-#ifndef HEADLESS
     JpegHistoryGraph.Update();
-#endif
     SvgHistoryGraph.Update();
 }
 
@@ -141,9 +133,7 @@ void CServerLogging::ParseLogFile ( const QString& strFileName )
                 if ( strAddress.isEmpty() )
                 {
                     // server stop
-#ifndef HEADLESS
                     JpegHistoryGraph.Add ( curDateTime, AHistoryGraph::HIT_SERVER_STOP );
-#endif
                     SvgHistoryGraph.Add ( curDateTime, CSvgHistoryGraph::HIT_SERVER_STOP );
                 }
                 else
@@ -154,9 +144,7 @@ void CServerLogging::ParseLogFile ( const QString& strFileName )
                     if ( curAddress.setAddress ( strlistCurLine.at ( 1 ).trimmed() ) )
                     {
                         // new client connection
-#ifndef HEADLESS
                         JpegHistoryGraph.Add ( curDateTime, curAddress );
-#endif
                         SvgHistoryGraph.Add ( curDateTime, curAddress );
                     }
                 }
@@ -164,9 +152,7 @@ void CServerLogging::ParseLogFile ( const QString& strFileName )
         }
     }
 
-#ifndef HEADLESS
     JpegHistoryGraph.Update();
-#endif
     SvgHistoryGraph.Update();
 }
 

@@ -2,8 +2,8 @@ VERSION = 3.5.7git
 
 # use target name which does not use a captital letter at the beginning
 contains(CONFIG, "noupcasename") {
-    message(The target name is jamulus instead of Jamulus.)
-    TARGET = jamulus
+    message(The target name is repetbox instead of Repetbox.)
+    TARGET = repetbox
 }
 
 # support multi-threading with OMP if requested
@@ -669,8 +669,8 @@ DISTFILES += ChangeLog \
     src/res/faderhandlesmall.png \
     src/res/HLEDGreen.png \
     src/res/HLEDGreenSmall.png \
-    src/res/HLEDBlack.png \
-    src/res/HLEDBlackSmall.png \
+    src/res/HLEDGrey.png \
+    src/res/HLEDGreySmall.png \
     src/res/HLEDRed.png \
     src/res/HLEDRedSmall.png \
     src/res/HLEDYellow.png \
@@ -678,6 +678,7 @@ DISTFILES += ChangeLog \
     src/res/ledbuttonnotpressed.png \
     src/res/ledbuttonpressed.png \
     src/res/fronticon.png \
+    src/res/logopicture.png \
     src/res/mainicon.png \
     src/res/mixerboardbackground.png \
     src/res/VLEDBlack.png \
@@ -701,57 +702,36 @@ DISTFILES += ChangeLog \
     src/res/VRLEDRedSmall.png \
     src/res/VRLEDYellow.png \
     src/res/VRLEDYellowSmall.png \
-    src/res/instruments/accordeon.png \
-    src/res/instruments/aguitar.png \
-    src/res/instruments/bassguitar.png \
-    src/res/instruments/cello.png \
-    src/res/instruments/clarinet.png \
-    src/res/instruments/djembe.png \
-    src/res/instruments/doublebass.png \
-    src/res/instruments/drumset.png \
-    src/res/instruments/eguitar.png \
-    src/res/instruments/flute.png \
-    src/res/instruments/frenchhorn.png \
-    src/res/instruments/grandpiano.png \
-    src/res/instruments/harmonica.png \
-    src/res/instruments/keyboard.png \
-    src/res/instruments/listener.png \
-    src/res/instruments/microphone.png \
-    src/res/instruments/none.png \
-    src/res/instruments/recorder.png \
-    src/res/instruments/saxophone.png \
-    src/res/instruments/streamer.png \
-    src/res/instruments/synthesizer.png \
-    src/res/instruments/trombone.png \
-    src/res/instruments/trumpet.png \
-    src/res/instruments/tuba.png \
-    src/res/instruments/violin.png \
-    src/res/instruments/vocal.png \
-    src/res/instruments/guitarvocal.png \
-    src/res/instruments/keyboardvocal.png \
+    src/res/instruments/instraccordeon.png \
+    src/res/instruments/instraguitar.png \
+    src/res/instruments/instrbassguitar.png \
+    src/res/instruments/instrcello.png \
+    src/res/instruments/instrclarinet.png \
+    src/res/instruments/instrdjembe.png \
+    src/res/instruments/instrdoublebass.png \
+    src/res/instruments/instrdrumset.png \
+    src/res/instruments/instreguitar.png \
+    src/res/instruments/instrflute.png \
+    src/res/instruments/instrfrenchhorn.png \
+    src/res/instruments/instrgrandpiano.png \
+    src/res/instruments/instrharmonica.png \
+    src/res/instruments/instrkeyboard.png \
+    src/res/instruments/instrlistener.png \
+    src/res/instruments/instrmicrophone.png \
+    src/res/instruments/instrnone.png \
+    src/res/instruments/instrrecorder.png \
+    src/res/instruments/instrsaxophone.png \
+    src/res/instruments/instrstreamer.png \
+    src/res/instruments/instrsynthesizer.png \
+    src/res/instruments/instrtrombone.png \
+    src/res/instruments/instrtrumpet.png \
+    src/res/instruments/instrtuba.png \
+    src/res/instruments/instrviolin.png \
+    src/res/instruments/instrvocal.png \
+    src/res/instruments/instrguitarvocal.png \
+    src/res/instruments/instrkeyboardvocal.png \
     src/res/instruments/bodhran.svg \
     src/res/instruments/bodhran.png \
-    src/res/instruments/bassoon.svg \
-    src/res/instruments/bassoon.png \
-    src/res/instruments/oboe.svg \
-    src/res/instruments/oboe.png \
-    src/res/instruments/harp.svg \
-    src/res/instruments/harp.png \
-    src/res/instruments/viola.png \
-    src/res/instruments/congas.svg \
-    src/res/instruments/congas.png \
-    src/res/instruments/bongo.svg \
-    src/res/instruments/bongo.png \
-    src/res/instruments/ukulele.svg \
-    src/res/instruments/ukulele.png \
-    src/res/instruments/bassukulele.svg \
-    src/res/instruments/bassukulele.png \
-    src/res/instruments/vocalbass.png \
-    src/res/instruments/vocaltenor.png \
-    src/res/instruments/vocalalto.png \
-    src/res/instruments/vocalsoprano.png \
-    src/res/instruments/banjo.png \
-    src/res/instruments/mandolin.png \
     src/res/flags/flagnone.png \
     src/res/flags/ad.png \
     src/res/flags/ae.png \

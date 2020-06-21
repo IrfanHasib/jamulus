@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
 
@@ -39,9 +39,7 @@ class CServerLogging
 {
 public:
     CServerLogging ( const int iMaxDaysHistory ) :
-#ifndef HEADLESS
         JpegHistoryGraph ( iMaxDaysHistory ),
-#endif
         SvgHistoryGraph ( iMaxDaysHistory ),
         bDoLogging ( false ),
         File ( DEFAULT_LOG_FILE_NAME ) {}
@@ -58,9 +56,7 @@ protected:
     void operator<< ( const QString& sNewStr );
     QString CurTimeDatetoLogString();
 
-#ifndef HEADLESS
     CJpegHistoryGraph JpegHistoryGraph;
-#endif
     CSvgHistoryGraph  SvgHistoryGraph;
     bool              bDoLogging;
     QFile             File;
