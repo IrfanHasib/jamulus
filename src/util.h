@@ -549,6 +549,7 @@ enum EGetDataStat
 enum EGUIDesign
 {
     // used for settings -> enum values must be fixed!
+    // Fancy checkbox
     GD_STANDARD = 0,
     GD_ORIGINAL = 1
 };
