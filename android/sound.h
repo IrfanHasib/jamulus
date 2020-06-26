@@ -33,18 +33,20 @@
 
 
 /* Classes ********************************************************************/
-class CSound : public CSoundBase
-{
+class CSound : public CSoundBase {
 public:
-    CSound (void (*fpNewProcessCallback) ( CVector<short>& psData, void* arg ),
-            void* arg,
-            const int      iCtrlMIDIChannel,
-            const bool     ,
-            const QString& );
+    CSound(void (*fpNewProcessCallback)(CVector<short> &psData, void *arg),
+           void *arg,
+           const int iCtrlMIDIChannel,
+           const bool,
+           const QString &);
+
     virtual ~CSound() {}
 
-    virtual int  Init ( const int iNewPrefMonoBufferSize );
+    virtual int Init(const int iNewPrefMonoBufferSize);
+
     virtual void Start();
+
     virtual void Stop();
 
     // these variables should be protected but cannot since we want
@@ -52,35 +54,36 @@ public:
     CVector<short> vecsTmpAudioSndCrdStereo;
 
 // TEST
-CVector<short> vecsTmpAudioInSndCrd;
-int            iModifiedInBufSize;
+    CVector<short> vecsTmpAudioInSndCrd;
+    int iModifiedInBufSize;
 
-    int            iOpenSLBufferSizeMono;
-    int            iOpenSLBufferSizeStereo;
+    int iOpenSLBufferSizeMono;
+    int iOpenSLBufferSizeStereo;
 
 protected:
 
     void InitializeOpenSL();
+
     void CloseOpenSL();
 
     // callbacks
-    static void processInput ( SLAndroidSimpleBufferQueueItf bufferQueue,
-                               void*                         instance );
+    static void processInput(SLAndroidSimpleBufferQueueItf bufferQueue,
+                             void *instance);
 
-    static void processOutput ( SLAndroidSimpleBufferQueueItf bufferQueue,
-                                void*                         instance );
+    static void processOutput(SLAndroidSimpleBufferQueueItf bufferQueue,
+                              void *instance);
 
-    SLObjectItf                   engineObject;
-    SLEngineItf                   engine;
-    SLObjectItf                   recorderObject;
-    SLRecordItf                   recorder;
+    SLObjectItf engineObject;
+    SLEngineItf engine;
+    SLObjectItf recorderObject;
+    SLRecordItf recorder;
     SLAndroidSimpleBufferQueueItf recorderSimpleBufQueue;
-    SLObjectItf                   outputMixObject;
-    SLObjectItf                   playerObject;
-    SLPlayItf                     player;
+    SLObjectItf outputMixObject;
+    SLObjectItf playerObject;
+    SLPlayItf player;
     SLAndroidSimpleBufferQueueItf playerSimpleBufQueue;
 
-    QMutex                        Mutex;
+    QMutex Mutex;
 
 };
 
