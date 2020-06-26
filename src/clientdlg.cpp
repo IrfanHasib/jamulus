@@ -843,7 +843,7 @@ void CClientDlg::SetMyWindowTitle ( const int iNumClients )
         }
     }
 
-#if defined ( __APPLE__ ) || defined ( __MACOSX )
+#if (defined ( __APPLE__ ) || defined ( __MACOSX ))  && !defined ( TARGET_OS_IPHONE )
     // for MacOS only we show the number of connected clients as a
     // badge label text if more than one user is connected
     // (only available in Qt5.2)
