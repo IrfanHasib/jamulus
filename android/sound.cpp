@@ -23,6 +23,7 @@
 \******************************************************************************/
 
 #include "sound.h"
+#include "androiddebug.cpp"
 
 
 /* Implementation *************************************************************/
@@ -33,7 +34,9 @@ CSound::CSound(
         const bool,
         const QString &) :
         CSoundBase("OpenSL", true, fpNewProcessCallback, arg, iCtrlMIDIChannel) {
-
+#ifdef ANDROIDDEBUG
+    qInstallMessageHandler(myMessageHandler);
+#endif
 }
 
 void CSound::InitializeOpenSL() {

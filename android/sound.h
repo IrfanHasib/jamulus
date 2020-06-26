@@ -30,7 +30,8 @@
 #include <QMutex>
 #include "soundbase.h"
 #include "global.h"
-
+#include <QDebug>
+#include <android/log.h>
 
 /* Classes ********************************************************************/
 class CSound : public CSoundBase {
