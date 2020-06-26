@@ -46,7 +46,11 @@
 #  include "../windows/sound.h"
 # else
 #  if ( defined ( __APPLE__ ) || defined ( __MACOSX ) ) && !defined ( JACK_REPLACES_COREAUDIO )
-#   include "../mac/sound.h"
+#    if TARGET_OS_IPHONE //IPHONE is a subset of MAC, so test if target is IPHONE
+#     include "../ios/sound.h"
+#    else
+#     include "../mac/sound.h"
+#    endif
 #  else
 #   ifdef ANDROID
 #    include "../android/sound.h"
