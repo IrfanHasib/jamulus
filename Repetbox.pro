@@ -283,7 +283,17 @@ win32 {
         HEADERS += $$OBOE_HEADERS
         SOURCES += $$OBOE_SOURCES
         DISTFILES += $$DISTFILES_OBOE
-} else:unix {
+} else:ios {
+       QTPLUGIN += qtaudio_coreaudio
+       HEADERS += ios/sound.h
+       SOURCES += ios/sound.cpp
+       RC_FILE = mac/mainicon.icns
+       LIBS += -framework CoreFoundation \
+           -framework MobileCoreServices \
+           -framework CoreAudio \
+           -framework AudioToolbox
+}
+else:unix {
     # we want to compile with C++11
     CONFIG += c++11
 
@@ -337,16 +347,7 @@ win32 {
     icons.files = distributions/jamulus.png
 
     INSTALLS += target desktop icons
-} else:ios {
-     QTPLUGIN += qtaudio_coreaudio
-     HEADERS += ios/sound.h
-     SOURCES += ios/sound.cpp
-     RC_FILE = mac/mainicon.icns
-     LIBS += -framework CoreFoundation \
-         -framework MobileCoreServices \
-         -framework CoreAudio \
-         -framework AudioToolbox
- }
+}
 
 RCC_DIR = src/res
 RESOURCES += src/resources.qrc
