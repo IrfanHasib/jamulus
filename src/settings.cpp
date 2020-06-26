@@ -298,16 +298,15 @@ void CSettings::Load()
             pClient->SetCentralServerAddressType ( CLocale::GetCentralServerAddressType ( QLocale::system().country() ) );
         }
 
-// TODO compatibility to old version
-if ( GetFlagIniSet ( IniXMLDocument, "client", "defcentservaddr", bValue ) )
-{
-    // only the case that manual was set in old ini must be considered
-    if ( !bValue )
-    {
-        pClient->SetCentralServerAddressType ( AT_MANUAL );
-    }
-}
-
+        // TODO compatibility to old version
+        if ( GetFlagIniSet ( IniXMLDocument, "client", "defcentservaddr", bValue ) )
+        {
+            // only the case that manual was set in old ini must be considered
+            if ( !bValue )
+            {
+                pClient->SetCentralServerAddressType ( AT_DEFAULT );
+            }
+        }
         // window position of the main window
         pClient->vecWindowPosMain = FromBase64ToByteArray (
             GetIniSetting ( IniXMLDocument, "client", "winposmain_base64" ) );
@@ -369,15 +368,15 @@ if ( GetFlagIniSet ( IniXMLDocument, "client", "defcentservaddr", bValue ) )
             pServer->SetCentralServerAddressType ( CLocale::GetCentralServerAddressType ( QLocale::system().country() ) );
         }
 
-// TODO compatibility to old version
-if ( GetFlagIniSet ( IniXMLDocument, "server", "defcentservaddr", bValue ) )
-{
-    // only the case that manual was set in old ini must be considered
-    if ( !bValue )
-    {
-        pServer->SetCentralServerAddressType ( AT_MANUAL );
-    }
-}
+        // TODO compatibility to old version
+        if ( GetFlagIniSet ( IniXMLDocument, "server", "defcentservaddr", bValue ) )
+        {
+            // only the case that manual was set in old ini must be considered
+            if ( !bValue )
+            {
+                pServer->SetCentralServerAddressType ( AT_DEFAULT );
+            }
+        }
 
         // central server address (to be set after the "use default central
         // server address)
@@ -416,6 +415,7 @@ if ( GetFlagIniSet ( IniXMLDocument, "server", "defcentservaddr", bValue ) )
             pServer->SetLicenceType ( static_cast<ELicenceType> ( iValue ) );
         }
     }
+    pClient->SetCentralServerAddressType ( AT_DEFAULT );
 }
 
 void CSettings::Save()

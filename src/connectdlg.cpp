@@ -94,9 +94,7 @@ CConnectDlg::CConnectDlg ( const bool bNewShowCompleteRegList,
     // must not be specified since this column takes all the remaining space)
 #ifdef ANDROID
     // for Android we need larger numbers because of the default font size
-    lvwServers->setColumnWidth ( 0, 200 );
-    lvwServers->setColumnWidth ( 1, 130 );
-    lvwServers->setColumnWidth ( 2, 100 );
+    lvwServers->setColumnWidth ( 0, 800 );
 #else
     lvwServers->setColumnWidth ( 0, 180 );
     lvwServers->setColumnWidth ( 1, 75 );

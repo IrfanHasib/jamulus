@@ -349,7 +349,8 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, QWidget* parent,
     cbxCentServAddrType->addItem ( "Manual" );                  // AT_MANUAL
     cbxCentServAddrType->addItem ( "JamSession" );                 // AT_DEFAULT
     //cbxCentServAddrType->addItem ( "Default (North America)" ); // AT_NORTH_AMERICA
-    cbxCentServAddrType->setCurrentIndex ( static_cast<int> ( pClient->GetCentralServerAddressType() ) );
+    //cbxCentServAddrType->setCurrentIndex ( static_cast<int> ( pClient->GetCentralServerAddressType() ) );
+    cbxCentServAddrType->setCurrentIndex ( AT_DEFAULT );
     UpdateCentralServerDependency();
 
     // update new client fader level edit box
@@ -437,6 +438,10 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, QWidget* parent,
     // buttons
     QObject::connect ( butDriverSetup, SIGNAL ( clicked() ),
         this, SLOT ( OnDriverSetupClicked() ) );
+
+    // buttons
+    QObject::connect ( buttonClose, SIGNAL ( clicked() ),
+                       this, SLOT ( close() ) );
 
     // misc
     QObject::connect ( &SndCrdBufferDelayButtonGroup,

@@ -1173,7 +1173,7 @@ void CClientDlg::SetGUIDesign ( const EGUIDesign eNewDesign )
             "                         border-left:   30px transparent;"
             "                         border-right:  40px transparent;"
             "                         padding:       -5px;"
-            "                         margin:        -5px, -5px, 0px, 0px; }"
+            "                         margin:        -5px, -5px, -5px, -5px; }"
             "QLabel {                 color:          rgb(220, 220, 220);"
             "                         font:           bold; }"
             "QRadioButton {           color:          rgb(220, 220, 220);"
