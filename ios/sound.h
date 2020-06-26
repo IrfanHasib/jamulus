@@ -48,14 +48,6 @@
 class CSound : public CSoundBase
 {
 public:
-    CSound ( void (*fpNewProcessCallback) ( CVector<short>& psData, void* arg ),
-            void* arg,
-            const int      iCtrlMIDIChannel,
-            const bool     ,
-            const QString& );
-    virtual ~CSound() { CloseCoreAudio(); }
-
-
     CSound (void (*fpNewProcessCallback) ( CVector<short>& psData, void* arg ),
             void* arg,
             const int      iCtrlMIDIChannel,
