@@ -100,7 +100,18 @@ win32 {
         INCLUDEPATH += "C:/Program Files (x86)/Jack/includes"
         LIBS += "C:/Program Files (x86)/Jack/lib/libjack64.lib"
     }
-} else:macx {
+}
+else:ios {
+       QTPLUGIN += qtaudio_coreaudio
+       HEADERS += ios/sound.h
+       SOURCES += ios/sound.cpp
+       RC_FILE = mac/mainicon.icns
+       LIBS += -framework CoreFoundation \
+           -framework MobileCoreServices \
+           -framework CoreAudio \
+           -framework AudioToolbox
+}
+else:macx {
     contains(CONFIG, "server_bundle") {
         message(The generated application bundle will run a server instance.)
 
@@ -283,15 +294,6 @@ win32 {
         HEADERS += $$OBOE_HEADERS
         SOURCES += $$OBOE_SOURCES
         DISTFILES += $$DISTFILES_OBOE
-} else:ios {
-       QTPLUGIN += qtaudio_coreaudio
-       HEADERS += ios/sound.h
-       SOURCES += ios/sound.cpp
-       RC_FILE = mac/mainicon.icns
-       LIBS += -framework CoreFoundation \
-           -framework MobileCoreServices \
-           -framework CoreAudio \
-           -framework AudioToolbox
 }
 else:unix {
     # we want to compile with C++11
