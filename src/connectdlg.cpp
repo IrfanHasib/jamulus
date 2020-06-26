@@ -880,3 +880,10 @@ if ( pCurListViewItem->isHidden() )
     }
 }
 #endif
+
+void CConnectDlg::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Back || event->key() == Qt::Key_Menu || event->key() == Qt::Key_TopMenu || event->key() == Qt::Key_Escape) {
+        this->close();
+    }
+}

@@ -22,6 +22,7 @@
  *
 \******************************************************************************/
 
+#include <QKeyEvent>
 #include <QLabel>
 #include <QString>
 #include <QLineEdit>
@@ -103,6 +104,7 @@ protected:
     void OnAudioQualityActivated ( int iQualityIdx );
     void OnCentServAddrTypeActivated ( int iTypeIdx );
     void OnDriverSetupClicked();
+    void keyPressEvent ( QKeyEvent *e );
 
 signals:
     void GUIDesignChanged();

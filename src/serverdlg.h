@@ -22,6 +22,7 @@
  *
 \******************************************************************************/
 
+#include <QKeyEvent>
 #include <QCloseEvent>
 #include <QLabel>
 #include <QListView>
@@ -100,6 +101,5 @@ public slots:
     void OnSysTrayMenuExit() { close(); }
     void OnSysTrayActivated ( QSystemTrayIcon::ActivationReason ActReason );
 
-    void keyPressEvent ( QKeyEvent *e ) // block escape key
-        { if ( e->key() != Qt::Key_Escape ) QDialog::keyPressEvent ( e ); }
+    void keyPressEvent ( QKeyEvent *e );
 };

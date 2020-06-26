@@ -22,6 +22,7 @@
  *
 \******************************************************************************/
 
+#include <QKeyEvent>
 #include <QLabel>
 #include <QString>
 #include <QLineEdit>
@@ -48,8 +49,7 @@ public slots:
     void OnLocalInputTextTextChanged ( const QString& strNewText );
     void OnClearPressed();
 
-    void keyPressEvent ( QKeyEvent *e ) // block escape key
-        { if ( e->key() != Qt::Key_Escape ) QDialog::keyPressEvent ( e ); }
+    void keyPressEvent ( QKeyEvent *e );
 
 signals:
     void NewLocalInputText ( QString strNewText );

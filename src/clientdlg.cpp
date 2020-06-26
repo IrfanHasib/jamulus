@@ -553,6 +553,12 @@ CClientDlg::CClientDlg ( CClient*        pNCliP,
     // Timers ------------------------------------------------------------------
     // start timer for status bar
     TimerStatus.start ( LED_BAR_UPDATE_TIME_MS );
+
+#ifdef ANDROID
+    // for the android version maximize the window
+    setWindowState ( Qt::WindowMaximized );
+#endif
+
 }
 
 void CClientDlg::closeEvent ( QCloseEvent* Event )

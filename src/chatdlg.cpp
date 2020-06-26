@@ -63,6 +63,12 @@ CChatDlg::CChatDlg ( QWidget* parent, Qt::WindowFlags f ) :
 
     QObject::connect ( butClear, SIGNAL ( pressed() ),
         this, SLOT ( OnClearPressed() ) );
+
+#ifdef ANDROID
+    // for the android version maximize the window
+    setWindowState ( Qt::WindowMaximized );
+#endif
+
 }
 
 void CChatDlg::OnLocalInputTextTextChanged ( const QString& strNewText )
@@ -101,4 +107,11 @@ void CChatDlg::AddChatText ( QString strChatText )
         new QAccessibleValueChangeEvent ( txvChatWindow, strChatText )
 #endif
         );
+}
+
+void CChatDlg::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Back || event->key() == Qt::Key_Menu || event->key() == Qt::Key_TopMenu || event->key() == Qt::Key_Escape) {
+        this->close();
+    }
 }

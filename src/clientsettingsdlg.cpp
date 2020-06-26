@@ -447,6 +447,11 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, QWidget* parent,
     // Timers ------------------------------------------------------------------
     // start timer for status bar
     TimerStatus.start ( DISPLAY_UPDATE_TIME );
+
+#ifdef ANDROID
+    // for the android version maximize the window
+    setWindowState ( Qt::WindowMaximized );
+#endif
 }
 
 void CClientSettingsDlg::UpdateJitterBufferFrame()
@@ -801,5 +806,12 @@ void CClientSettingsDlg::UpdateDisplay()
         // update upstream rate information label (only if client is running)
         lblUpstreamValue->setText (
             QString().setNum ( pClient->GetUploadRateKbps() ) + " kbps" );
+    }
+}
+
+void CClientSettingsDlg::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Back || event->key() == Qt::Key_Menu || event->key() == Qt::Key_TopMenu || event->key() == Qt::Key_Escape) {
+        this->close();
     }
 }

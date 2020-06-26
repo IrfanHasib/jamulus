@@ -22,6 +22,7 @@
  *
 \******************************************************************************/
 
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -112,6 +113,7 @@ public slots:
     void OnConnectClicked();
     void OnTimerPing();
     void OnTimerReRequestServList();
+    void keyPressEvent ( QKeyEvent *e );
 
 signals:
     void ReqServerListQuery ( CHostAddress InetAddr );

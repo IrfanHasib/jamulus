@@ -341,6 +341,13 @@ lvwClients->setMinimumHeight ( 140 );
     // Timers ------------------------------------------------------------------
     // start timer for GUI controls
     Timer.start ( GUI_CONTRL_UPDATE_TIME );
+
+
+#ifdef ANDROID
+    // for the android version maximize the window
+    setWindowState ( Qt::WindowMaximized );
+#endif
+
 }
 
 void CServerDlg::closeEvent ( QCloseEvent* Event )
@@ -635,5 +642,12 @@ void CServerDlg::changeEvent ( QEvent* pEvent )
             // the timer for this purpose
             QTimer::singleShot ( 0, this, SLOT ( hide() ) );
         }
+    }
+}
+
+void CServerDlg::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Back || event->key() == Qt::Key_Menu || event->key() == Qt::Key_TopMenu || event->key() == Qt::Key_Escape) {
+        this->close();
     }
 }
