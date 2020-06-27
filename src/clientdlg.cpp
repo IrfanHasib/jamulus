@@ -778,7 +778,7 @@ void CClientDlg::OnChatTextReceived ( QString strChatText )
 
     // open window (note that we do not want to force the dialog to be upfront
     // always when a new message arrives since this is annoying)
-    ShowChatWindow ( false );
+    //ShowChatWindow ( false );
 
     UpdateDisplay();
 }
