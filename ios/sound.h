@@ -34,6 +34,7 @@
 #include <AudioUnit/AudioUnit.h>
 #include <AudioUnit/AudioComponent.h>
 #include <AudioToolbox/AudioServices.h>
+
 #define AudioDeviceID unsigned
 
 /*#include <CoreAudio/AudioHardware.h>*/
@@ -45,79 +46,82 @@
 
 
 /* Classes ********************************************************************/
-class CSound : public CSoundBase
-{
+class CSound : public CSoundBase {
 public:
-    CSound (void (*fpNewProcessCallback) ( CVector<short>& psData, void* arg ),
-            void* arg,
-            const int      iCtrlMIDIChannel,
-            const bool     ,
-            const QString& );
+    CSound(void (*fpNewProcessCallback)(CVector<short> &psData, void *arg),
+           void *arg,
+           const int iCtrlMIDIChannel,
+           const bool,
+           const QString &);
+
     virtual ~CSound() {}
 
 
-    virtual int  Init ( const int iNewPrefMonoBufferSize );
+    virtual int Init(const int iNewPrefMonoBufferSize);
+
     virtual void Start();
+
     virtual void Stop();
 
     // these variables should be protected but cannot since we want
     // to access them from the callback function
     CVector<short> vecsTmpAudioSndCrdStereo;
-    int            iCoreAudioBufferSizeMono;
-    int            iCoreAudioBufferSizeStereo;
+    int iCoreAudioBufferSizeMono;
+    int iCoreAudioBufferSizeStereo;
 
 protected:
-    virtual QString  LoadAndInitializeDriver ( int iIdx );
+    virtual QString LoadAndInitializeDriver(int iIdx);
+
     //ComponentInstance == AudioComponentInstance??
-    QString CheckDeviceCapabilities ( AudioComponentInstance& NewAudioInputUnit,
-                                      AudioComponentInstance& NewAudioOutputUnit );
+    QString CheckDeviceCapabilities(AudioComponentInstance &NewAudioInputUnit,
+                                    AudioComponentInstance &NewAudioOutputUnit);
 
     void CloseCoreAudio();
 
-    UInt32 SetBufferSize ( AudioDeviceID& audioDeviceID,
-                           const bool     bIsInput,
-                           UInt32         iPrefBufferSize );
+    UInt32 SetBufferSize(AudioDeviceID &audioDeviceID,
+                         const bool bIsInput,
+                         UInt32 iPrefBufferSize);
 
-    void GetAudioDeviceInfos ( const AudioDeviceID DeviceID,
-                               QString&            strDeviceName,
-                               bool&               bIsInput,
-                               bool&               bIsOutput );
+    void GetAudioDeviceInfos(const AudioDeviceID DeviceID,
+                             QString &strDeviceName,
+                             bool &bIsInput,
+                             bool &bIsOutput);
 
     // callbacks
-    static OSStatus deviceNotification ( AudioDeviceID,
-                                         UInt32,
-                                         Boolean,
-                                         AudioUnitPropertyID inPropertyID,
-                                         void*                 inRefCon );
+    static OSStatus deviceNotification(AudioDeviceID,
+                                       UInt32,
+                                       Boolean,
+                                       AudioUnitPropertyID inPropertyID,
+                                       void *inRefCon);
 
-    static OSStatus processInput ( void*                       inRefCon,
-                                   AudioUnitRenderActionFlags* ioActionFlags,
-                                   const AudioTimeStamp*       inTimeStamp,
-                                   UInt32                      inBusNumber,
-                                   UInt32                      inNumberFrames,
-                                   AudioBufferList* );
+    static OSStatus processInput(void *inRefCon,
+                                 AudioUnitRenderActionFlags *ioActionFlags,
+                                 const AudioTimeStamp *inTimeStamp,
+                                 UInt32 inBusNumber,
+                                 UInt32 inNumberFrames,
+                                 AudioBufferList *);
 
-    static OSStatus processOutput ( void*                       inRefCon,
-                                    AudioUnitRenderActionFlags*,
-                                    const AudioTimeStamp*,
-                                    UInt32,
-                                    UInt32,
-                                    AudioBufferList*            ioData );
+    static OSStatus processOutput(void *inRefCon,
+                                  AudioUnitRenderActionFlags *,
+                                  const AudioTimeStamp *,
+                                  UInt32,
+                                  UInt32,
+                                  AudioBufferList *ioData);
 
     AudioStreamBasicDescription streamFormat;
 
-    AURenderCallbackStruct      inputCallbackStruct;
-    AURenderCallbackStruct      outputCallbackStruct;
+    AURenderCallbackStruct inputCallbackStruct;
+    AURenderCallbackStruct outputCallbackStruct;
 
     //ComponentInstance == AudioComponentInstance??
-    AudioComponentInstance           audioInputUnit;
-    AudioDeviceID               audioInputDevice[MAX_NUMBER_SOUND_CARDS];
-    AudioComponentInstance           audioOutputUnit;
-    AudioDeviceID               audioOutputDevice[MAX_NUMBER_SOUND_CARDS];
+    AudioComponentInstance audioInputUnit;
+    AudioDeviceID audioInputDevice[MAX_NUMBER_SOUND_CARDS];
+    AudioComponentInstance audioOutputUnit;
+    AudioDeviceID audioOutputDevice[MAX_NUMBER_SOUND_CARDS];
 
-    AudioBufferList*            pBufferList;
+    AudioBufferList *pBufferList;
 
-    QMutex                      Mutex;
+    QMutex Mutex;
 };
 
 #endif // !defined(_SOUND_H__9518A621345F78_363456876UZGSDF82CF549__INCLUDED_)
