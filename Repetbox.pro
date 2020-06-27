@@ -102,14 +102,17 @@ win32 {
     }
 }
 else:ios {
-       QTPLUGIN += qtaudio_coreaudio
-       HEADERS += ios/sound.h
-       SOURCES += ios/sound.cpp
-       RC_FILE = mac/mainicon.icns
-       LIBS += -framework CoreFoundation \
-           -framework MobileCoreServices \
-           -framework CoreAudio \
-           -framework AudioToolbox
+     ios_icon.files = $$files($$PWD/ios/AppIcon.appiconset/AppIcon*.png)
+     QMAKE_BUNDLE_DATA += ios_icon
+     QMAKE_INFO_PLIST = ios/Info.plist
+     QTPLUGIN += qtaudio_coreaudio
+     HEADERS += ios/sound.h
+     SOURCES += ios/sound.cpp
+     RC_FILE = mac/mainicon.icns
+     LIBS += -framework CoreFoundation \
+         -framework MobileCoreServices \
+         -framework CoreAudio \
+         -framework AudioToolbox
 }
 else:macx {
     contains(CONFIG, "server_bundle") {
