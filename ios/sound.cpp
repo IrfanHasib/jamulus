@@ -528,9 +528,9 @@ OSStatus CSound::processOutput(void *inRefCon,
 
     QMutexLocker locker(&pSound->Mutex);
 
-    memcpy(ioData->mBuffers[0].mData,
-           &pSound->vecsTmpAudioSndCrdStereo[0],
-           pSound->pBufferList->mBuffers[0].mDataByteSize);
+    //memcpy(ioData->mBuffers[0].mData,
+    //       &pSound->vecsTmpAudioSndCrdStereo[0],
+    //       pSound->pBufferList->mBuffers[0].mDataByteSize);
 
     return noErr;
 }
