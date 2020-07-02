@@ -23,7 +23,9 @@
 \******************************************************************************/
 
 #include "sound.h"
-
+#include <string>
+#include <QMediaPlayer>
+#include <QAudioDeviceInfo>
 
 /* Implementation *************************************************************/
 CSound::CSound(
@@ -181,6 +183,9 @@ CSound::CSound(
     // init device index as not initialized (invalid)
     lNumDevs = 1;
     lCurDev = INVALID_SNC_CARD_DEVICE;
+            
+            
+
 }
 
 void CSound::GetAudioDeviceInfos(const AudioDeviceID DeviceID,
@@ -345,6 +350,24 @@ void CSound::Start() {
     // start the rendering
     AudioOutputUnitStart(audioInputUnit);
     AudioOutputUnitStart(audioOutputUnit);
+    
+    // initialize all flags and string which might be changed by command line
+    // arguments
+    QMediaPlayer *player = new QMediaPlayer;
+    player->setMedia(QUrl("https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3"));
+    player->setVolume(70);
+    player->play();
+    qDebug() << "volumee " << player->volume();
+
+    const auto deviceInfos = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    for (const QAudioDeviceInfo &deviceInfo : deviceInfos)
+    {    qDebug() << "Device name: " << deviceInfo.deviceName();
+    qDebug() << "supportedSampleRates: " << deviceInfo.supportedSampleRates() ;
+        qDebug() << "supportedSampleSizes: " << deviceInfo.supportedSampleSizes() ;
+          qDebug() << "supportedChannelCounts: " << deviceInfo.supportedChannelCounts() ;
+
+
+    }
 
     // call base class
     CSoundBase::Start();
@@ -417,7 +440,8 @@ int CSound::Init(const int iNewPrefMonoBufferSize) {
         qDebug() << "Initialization of CoreAudio failed";
         throw CGenErr(tr("Initialization of CoreAudio failed"));
     }
-
+    qDebug() << &audioOutputUnit;
+    
     return iCoreAudioBufferSizeMono;
 }
 
@@ -528,6 +552,7 @@ OSStatus CSound::processOutput(void *inRefCon,
 
     QMutexLocker locker(&pSound->Mutex);
 
+    
     memcpy(ioData->mBuffers[0].mData,
            &pSound->vecsTmpAudioSndCrdStereo[0],
            pSound->pBufferList->mBuffers[0].mDataByteSize);

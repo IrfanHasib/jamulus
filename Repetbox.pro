@@ -22,7 +22,8 @@ CONFIG += qt \
     release
 
 QT += network \
-    xml
+    xml \
+    multimedia
 
 contains(CONFIG, "headless") {
     message(Headless mode activated.)
@@ -112,7 +113,8 @@ else:ios {
      LIBS += -framework CoreFoundation \
          -framework MobileCoreServices \
          -framework CoreAudio \
-         -framework AudioToolbox
+         -framework AudioToolbox \
+         -framework AVFoundation
 }
 else:macx {
     contains(CONFIG, "server_bundle") {
@@ -660,6 +662,7 @@ DISTFILES += ChangeLog \
     README.md \
     distributions/jamulus.desktop.in \
     distributions/jamulus.png \
+    ios/sample1.aac \
     src/res/translation/translation_de_DE.qm \
     src/res/translation/translation_fr_FR.qm \
     src/res/translation/translation_pt_PT.qm \

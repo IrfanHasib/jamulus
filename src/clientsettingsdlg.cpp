@@ -508,16 +508,16 @@ void CClientSettingsDlg::UpdateSoundCardFrame()
     // buttons to be unchecked in the case when the sound card does not
     // support any of the buffer sizes and therefore all radio buttons
     // are disabeld and unchecked.).
-    SndCrdBufferDelayButtonGroup.setExclusive ( false );
+    //SndCrdBufferDelayButtonGroup.setExclusive ( false );
     rbtBufferDelayPreferred->setChecked ( bPreferredChecked );
     rbtBufferDelayDefault->setChecked   ( bDefaultChecked );
     rbtBufferDelaySafe->setChecked      ( bSafeChecked );
-    SndCrdBufferDelayButtonGroup.setExclusive ( true );
+    //SndCrdBufferDelayButtonGroup.setExclusive ( true );
 
-    // disable radio buttons which are not supported by audio interface
-    rbtBufferDelayPreferred->setEnabled ( pClient->GetFraSiFactPrefSupported() );
-    rbtBufferDelayDefault->setEnabled   ( pClient->GetFraSiFactDefSupported() );
-    rbtBufferDelaySafe->setEnabled      ( pClient->GetFraSiFactSafeSupported() );
+    // disable radio buttons which are not supported by audio interface//
+    //rbtBufferDelayPreferred->setEnabled ( pClient->GetFraSiFactPrefSupported() );
+    //rbtBufferDelayDefault->setEnabled   ( pClient->GetFraSiFactDefSupported() );
+    //rbtBufferDelaySafe->setEnabled      ( pClient->GetFraSiFactSafeSupported() );
 
     // If any of our predefined sizes is chosen, use the regular group box
     // title text. If not, show the actual buffer size. Otherwise the user

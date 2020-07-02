@@ -71,7 +71,7 @@ public:
     virtual int     GetLeftInputChannel()  { return 0; }
     virtual int     GetRightInputChannel() { return 1; }
 
-    virtual int     GetNumOutputChannels() { return 2; }
+    virtual int     GetNumOutputChannels() { return 5; }
     virtual QString GetOutputChannelName ( const int ) { return "Default"; }
     virtual void    SetLeftOutputChannel  ( const int ) {}
     virtual void    SetRightOutputChannel ( const int ) {}

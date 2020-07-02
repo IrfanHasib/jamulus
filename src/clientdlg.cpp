@@ -1167,11 +1167,11 @@ void CClientDlg::SetGUIDesign ( const EGUIDesign eNewDesign )
     {
     case GD_ORIGINAL:
         backgroundFrame->setStyleSheet (
-            "QFrame#backgroundFrame { border-image:  url(:/png/fader/res/mixerboardbackground.png) 34px 30px 40px 40px;"
-            "                         border-top:    34px transparent;"
-            "                         border-bottom: 40px transparent;"
-            "                         border-left:   30px transparent;"
-            "                         border-right:  40px transparent;"
+            "QFrame#backgroundFrame { border-image:  url(:/png/fader/res/mixerboardbackground.png) 0 0 0 0;"
+            "                         border-top:    0px transparent;"
+            "                         border-bottom: 0px transparent;"
+            "                         border-left:   0px transparent;"
+            "                         border-right:  0px transparent;"
             "                         padding:       -5px;"
             "                         margin:        -5px, -5px, -5px, -5px; }"
             "QLabel {                 color:          rgb(220, 220, 220);"

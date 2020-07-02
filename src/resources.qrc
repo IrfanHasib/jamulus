@@ -301,4 +301,7 @@
         <file>res/flags/zm.png</file>
         <file>res/flags/zw.png</file>
     </qresource>
+    <qresource prefix="/audio">
+        <file>../ios/sample1.aac</file>
+    </qresource>
 </RCC>
